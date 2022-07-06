@@ -3,29 +3,32 @@ use std::ops::{Add, Sub, Mul, Div};
 
 #[derive(Copy, Clone, Debug)]
 pub struct vec3 {
-    pub x : f64, 
-    pub y : f64,
-    pub z : f64,
+    pub x: f64, 
+    pub y: f64,
+    pub z: f64,
 }
 
+pub type color = vec3;
+pub type point3 = vec3;
+
 impl vec3 {
-    // fn x(&self) -> f64 { self.x }
-    // fn y(&self) -> f64 { self.y }
-    // fn z(&self) -> f64 { self.z }
-    fn len_square(&self) -> f64 {
+    pub fn x(&self) -> f64 { self.x }
+    pub fn y(&self) -> f64 { self.y }
+    pub fn z(&self) -> f64 { self.z }
+    pub fn len_square(&self) -> f64 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
-    fn len(&self) -> f64 {
+    pub fn len(&self) -> f64 {
         self.len_square().sqrt()
     }
-    fn dot(&self, rhs: &mut vec3) -> vec3 {
+    pub fn dot(&self, rhs: vec3) -> vec3 {
         vec3 {
             x : self.x * rhs.x,
             y : self.y * rhs.y,
             z : self.z * rhs.z,
         }
     }
-    fn unit_length(self) -> vec3 {
+    pub fn unit_vector(self) -> vec3 {
         self / self.len()
     }
 }
@@ -71,6 +74,17 @@ impl Mul<f64> for vec3 {
             x: self.x * other,
             y: self.y * other,
             z: self.z * other,
+        }
+    }
+}
+impl Mul<vec3> for f64 {
+    type Output = vec3;
+    
+    fn mul(self, rhs: vec3) -> Self::Output {
+        vec3 {
+            x: self * rhs.x,
+            y: self * rhs.y,
+            z: self * rhs.z,
         }
     }
 }
