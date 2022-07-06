@@ -18,7 +18,7 @@ fn hit_shpere(center: point3, radius: f64, r: ray) -> f64 {
     if discrim < 0.0 {
         -1.0 
     } else {
-        -b - discrim.sqrt() / (2.0 * a)
+        (-b - discrim.sqrt()) / (2.0 * a)
     }
 }
 fn ray_color(r: ray) -> color {
