@@ -25,7 +25,7 @@ impl vec3 {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
     pub fn unit_vector(self) -> vec3 {
-        self / self.len()
+        self / (&self).len()
     }
 }
 
@@ -88,7 +88,11 @@ impl Div<f64> for vec3 {
     type Output = Self;
     
     fn div(self, other: f64) -> Self::Output {
-        self * (1.0 / other)
+        Self {
+            x: self.x / other,
+            y: self.y / other,
+            z: self.z / other,
+        }
     }
 }
 

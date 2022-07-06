@@ -2,22 +2,34 @@
 mod VEC3;
 mod RAY;
 
+// use std::os::windows::process;
+
 use VEC3::{vec3, color};
 use RAY::ray;
 
 use crate::VEC3::point3;
 
-fn hit_shpere(center: point3, radius: f64, r: ray) -> bool {
+fn hit_shpere(center: point3, radius: f64, r: ray) -> f64 {
     let oc = r.origin() - center;
     let a = vec3::dot(r.direction(), r.direction());
     let b = 2.0 * vec3::dot(oc, r.direction());
     let c = vec3::dot(oc, oc) - radius * radius;
     let discrim = b * b - 4.0 * a * c;
-    discrim > 0.0
+    if discrim < 0.0 {
+        -1.0 
+    } else {
+        -b - discrim.sqrt() / (2.0 * a)
+    }
 }
 fn ray_color(r: ray) -> color {
-    if hit_shpere(point3{x: 0.0, y: 0.0, z: -1.0}, 0.5, r) {
-        color{x: 1.0, y: 0.0, z: 0.0}
+    let t = hit_shpere(point3{x: 0.0, y: 0.0, z: -1.0}, 0.5, r);
+    if t > 0.0 {
+        let n = r.at(t) - vec3{x: 0.0, y: 0.0, z: -1.0};
+        // if N.len() != 1.0 {
+        //     eprint!("erro");
+        //     process::exit(0);
+        // }
+        0.5 * color{x: n.x() + 1.0, y: n.y() + 1.0, z: n.z() + 1.0}
     } else {
         let unit = r.direction().unit_vector();
         let t: f64 = 0.5 * (unit.y() + 1.0);
@@ -45,6 +57,7 @@ fn main() {
     let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - vec3{x: 0.0, y: 0.0, z: focal_length};
 
     // eprintln!("{:?}", lower_left_corner);
+    // eprintln!("{} {:?}", lower_left_corner.len(), lower_left_corner.unit_vector().len());
     // std::process::exit(0);
     // Render
     println!("P3");
