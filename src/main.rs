@@ -7,10 +7,22 @@ use RAY::ray;
 
 use crate::VEC3::point3;
 
+fn hit_shpere(center: point3, radius: f64, r: ray) -> bool {
+    let oc = r.origin() - center;
+    let a = vec3::dot(r.direction(), r.direction());
+    let b = 2.0 * vec3::dot(oc, r.direction());
+    let c = vec3::dot(oc, oc) - radius * radius;
+    let discrim = b * b - 4.0 * a * c;
+    discrim > 0.0
+}
 fn ray_color(r: ray) -> color {
-    let unit = r.direction().unit_vector();
-    let t: f64 = 0.5 * (unit.y() + 1.0);
-    (1.0 - t) * color{x: 1.0, y: 1.0, z: 1.0} + t * color{x: 0.5, y: 0.7, z: 1.0}
+    if hit_shpere(point3{x: 0.0, y: 0.0, z: -1.0}, 0.5, r) {
+        color{x: 1.0, y: 0.0, z: 0.0}
+    } else {
+        let unit = r.direction().unit_vector();
+        let t: f64 = 0.5 * (unit.y() + 1.0);
+        (1.0 - t) * color{x: 1.0, y: 1.0, z: 1.0} + t * color{x: 0.5, y: 0.7, z: 1.0}
+    }
 }
 
 fn main() {
@@ -28,10 +40,12 @@ fn main() {
 
     let origin = point3 {x: 0.0, y: 0.0, z: 0.0};
     let horizontal = vec3 {x: viewport_width, y: 0.0, z: 0.0};
-    let vertical = vec3 {x: 0.0, y: viewport_width, z: 0.0};
+    let vertical = vec3 {x: 0.0, y: viewport_height, z: 0.0};
 
     let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - vec3{x: 0.0, y: 0.0, z: focal_length};
 
+    // eprintln!("{:?}", lower_left_corner);
+    // std::process::exit(0);
     // Render
     println!("P3");
     print!("{} {}\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
@@ -39,8 +53,8 @@ fn main() {
 
     for j in (0..IMAGE_HEIGHT).rev() {
         for i in 0..IMAGE_WIDTH {
-            let u = i as f64 / (IMAGE_WIDTH - 1) as f64;
-            let v = j as f64 / (IMAGE_HEIGHT - 1) as f64;
+            let u = (i as f64) / ((IMAGE_WIDTH - 1) as f64);
+            let v = (j as f64) / ((IMAGE_HEIGHT - 1) as f64);
             let r = ray{orig: origin, dir: lower_left_corner + u * horizontal + v * vertical - origin};
             let pixel_color = ray_color(r);
             write_color(pixel_color);
