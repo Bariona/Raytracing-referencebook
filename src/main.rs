@@ -16,12 +16,18 @@ use obj::sphere::Sphere;
 pub const PI: f64 = 3.14159265358979323846264338327950288f64;
 pub const INF: f64 = f64::INFINITY;
 
-fn ray_color(r: Ray, world: &HittableList) -> Color {
-    if let Some(rec) = world.hit(&r, 0., INF) {
-        return 0.5 * (rec.normal + Color::new(1., 1., 1.));
+fn ray_color(r: Ray, world: &HittableList, depth: usize) -> Color {
+    if depth <= 0 {
+        return Color::new(0., 0., 0.);
     }
-    let unit = r.direction().unit_vector();
-    let t: f64 = 0.5 * (unit.y() + 1.);
+
+    if let Some(rec) = world.hit(&r, 0., INF) {
+        let target: Point3 = rec.p + rec.normal + Vec3::radom_in_unit_shpere();
+        return 0.5 * ray_color(Ray::new(rec.p, target - rec.p), world, depth - 1);
+    }
+    
+    let unit_direction = r.direction().unit_vector();
+    let t: f64 = 0.5 * (unit_direction.y() + 1.);
     (1.0 - t) * Color::new(1., 1., 1.) + t * Color::new(0.5, 0.7, 1.)
     
 }
@@ -33,7 +39,7 @@ fn main() {
     const IMAGE_WIDTH: usize = 400;
     const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / RATIO) as usize;
     const SAMPLES_PER_PIXEL: usize = 100;
-
+    const MAX_DEPTH: usize = 50;
 
     // World
     let mut world = HittableList::default();
@@ -48,16 +54,7 @@ fn main() {
 
     // Camera
     let cam = Camera::default();
-    // let viewport_height = 2.0;
-    // let viewport_width = viewport_height * RATIO;
-    // let focal_length = 1.0;
-
-    // let origin = Point3::new(0., 0., 0.);
-    // let horizontal = Vec3::new(viewport_width, 0., 0.);
-    // let vertical = Vec3::new(0., viewport_height, 0.);
-
-    // let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0., 0., focal_length);
-
+    
     // eprintln!("{} {:?}", lower_left_corner.len(), lower_left_corner.unit_vector().len());
     // std::process::exit(0);
     // Render
@@ -72,7 +69,7 @@ fn main() {
                 let u = (i as f64 + random_double()) / (IMAGE_WIDTH as f64 - 1.);
                 let v = (j as f64 + random_double()) / (IMAGE_HEIGHT as f64 - 1.);
                 let r = cam.get_ray(u, v);
-                pixel_color += ray_color(r, &world);
+                pixel_color += ray_color(r, &world, MAX_DEPTH);
             }
             write_color(pixel_color, SAMPLES_PER_PIXEL);
             // write_color(pixel_color);

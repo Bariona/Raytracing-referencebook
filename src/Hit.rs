@@ -6,7 +6,7 @@ pub use crate::basic::{
 #[derive(Default, Copy, Clone, Debug)]
 pub struct HitRecord {
     pub p: Point3, // 碰撞点 
-    pub normal: Vec3, // 碰撞点的法向量(与Ray的方向相反)
+    pub normal: Vec3, // 碰撞点的单 位 法 向 量(与Ray的方向相反)
     pub t: f64, // 表示 p = Ray(t) 
     pub front_face: bool, // 是否Ray来自外侧
 }

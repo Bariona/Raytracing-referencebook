@@ -1,6 +1,8 @@
 use std::ops::{Neg, AddAssign, MulAssign, DivAssign};
 use std::ops::{Add, Sub, Mul, Div};
 
+use super::{random_double, random_range};
+
 #[derive(Default, Copy, Clone, Debug)]
 pub struct Vec3 {
     pub x: f64, 
@@ -29,6 +31,19 @@ impl Vec3 {
     }
     pub fn unit_vector(self) -> Vec3 {
         self / (&self).len()
+    }
+    pub fn random() -> Self {
+        Self { x: random_double(), y: random_double(), z: random_double() }
+    }
+    pub fn random_range(min: f64, max: f64) -> Self {
+        Self { 
+            x: random_range(min, max), 
+            y: random_range(min, max), 
+            z: random_range(min, max),
+        }
+    }
+    pub fn radom_in_unit_shpere() -> Self {
+        Vec3::random_range(-1., 1.).unit_vector() * random_double()
     }
 }
 
