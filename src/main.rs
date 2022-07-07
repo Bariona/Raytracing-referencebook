@@ -1,62 +1,66 @@
 // use std::io::Write;
 mod VEC3;
 mod RAY;
+mod Hit;
+mod hit_base;
 
 // use std::os::windows::process;
+use VEC3::{Vec3, Color, Point3};
+use RAY::Ray;
+use hit_base::Hittable;
+use crate::Hit::{HittableList};
 
-use VEC3::{vec3, color};
-use RAY::ray;
+pub const pi: f64 = 3.14159265358979323846264338327950288f64;
+pub const inf: f64 = f64::INFINITY;
 
-use crate::VEC3::point3;
-
-fn hit_shpere(center: point3, radius: f64, r: ray) -> f64 {
+fn hit_shpere(center: Point3, radius: f64, r: Ray) -> f64 {
     let oc = r.origin() - center;
-    let a = vec3::dot(r.direction(), r.direction());
-    let b = 2.0 * vec3::dot(oc, r.direction());
-    let c = vec3::dot(oc, oc) - radius * radius;
+    let a = Vec3::dot(r.direction(), r.direction());
+    let b = 2.0 * Vec3::dot(oc, r.direction());
+    let c = Vec3::dot(oc, oc) - radius * radius;
     let discrim = b * b - 4.0 * a * c;
-    if discrim < 0.0 {
+    if discrim < 0. {
         -1.0 
     } else {
         (-b - discrim.sqrt()) / (2.0 * a)
     }
 }
-fn ray_color(r: ray) -> color {
-    let t = hit_shpere(point3{x: 0.0, y: 0.0, z: -1.0}, 0.5, r);
-    if t > 0.0 {
-        let n = r.at(t) - vec3{x: 0.0, y: 0.0, z: -1.0};
+fn Ray_Color(r: Ray) -> Color {
+    let t = hit_shpere(Point3{x: 0., y: 0., z: -1.0}, 0.5, r);
+    if t > 0. {
+        let n = r.at(t) - Vec3{x: 0., y: 0., z: -1.0};
         // if N.len() != 1.0 {
         //     eprint!("erro");
         //     process::exit(0);
         // }
-        0.5 * color{x: n.x() + 1.0, y: n.y() + 1.0, z: n.z() + 1.0}
+        0.5 * Color{x: n.x() + 1.0, y: n.y() + 1.0, z: n.z() + 1.0}
     } else {
         let unit = r.direction().unit_vector();
         let t: f64 = 0.5 * (unit.y() + 1.0);
-        (1.0 - t) * color{x: 1.0, y: 1.0, z: 1.0} + t * color{x: 0.5, y: 0.7, z: 1.0}
+        (1.0 - t) * Color{x: 1.0, y: 1.0, z: 1.0} + t * Color{x: 0.5, y: 0.7, z: 1.0}
     }
 }
 
 fn main() {
-    //let mut file = std::fs::File::create("2_1.txt").expect("Fail!");
 
     // Image
     const ratio: f64 = 16.0 / 9.0;    
     const IMAGE_WIDTH: u32 = 400;
     const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / ratio) as u32;
 
+    // World
+    let mut world: HittableList::default();
     // Camera
     let viewport_height = 2.0;
     let viewport_width = viewport_height * ratio;
     let focal_length = 1.0;
 
-    let origin = point3 {x: 0.0, y: 0.0, z: 0.0};
-    let horizontal = vec3 {x: viewport_width, y: 0.0, z: 0.0};
-    let vertical = vec3 {x: 0.0, y: viewport_height, z: 0.0};
+    let origin = Point3 {x: 0., y: 0., z: 0.};
+    let horizontal = Vec3 {x: viewport_width, y: 0., z: 0.};
+    let vertical = Vec3 {x: 0., y: viewport_height, z: 0.};
 
-    let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - vec3{x: 0.0, y: 0.0, z: focal_length};
+    let lower_left_corner = origin - horizontal / 2.0 - vertical / 2.0 - Vec3{x: 0., y: 0., z: focal_length};
 
-    // eprintln!("{:?}", lower_left_corner);
     // eprintln!("{} {:?}", lower_left_corner.len(), lower_left_corner.unit_vector().len());
     // std::process::exit(0);
     // Render
@@ -68,18 +72,21 @@ fn main() {
         for i in 0..IMAGE_WIDTH {
             let u = (i as f64) / ((IMAGE_WIDTH - 1) as f64);
             let v = (j as f64) / ((IMAGE_HEIGHT - 1) as f64);
-            let r = ray{orig: origin, dir: lower_left_corner + u * horizontal + v * vertical - origin};
-            let pixel_color = ray_color(r);
-            write_color(pixel_color);
-            // file.write_all(b"{ir} {ig} {ib}\n").unwrap();
+            let r = Ray{orig: origin, dir: lower_left_corner + u * horizontal + v * vertical - origin};
+            let pixel_color = Ray_Color(r);
+            write_Color(pixel_color);
         }
     }
 }
 
-fn write_color(col: color) {
+fn write_Color(col: Color) {
     println!("{} {} {}", 
         col.x() * 255.999, 
         col.y() * 255.999,
         col.z() * 255.999
     );
 }
+
+// fn degree_to_radians(degree: f64) -> f64 {
+//     degree * pi / 180.
+// }

@@ -1,21 +1,19 @@
-use super::VEC3;
+use super::VEC3::{Vec3, Point3};
 
-use super::VEC3::{vec3, point3};
-
-#[derive(Copy, Clone, Debug)]
-pub struct ray {
-    pub orig: point3, 
-    pub dir: vec3,
+#[derive(Default, Copy, Clone, Debug)]
+pub struct Ray {
+    pub orig: Point3, 
+    pub dir: Vec3,
 }
 
-impl ray {
-    pub fn origin(&self) -> point3 {
+impl Ray {
+    pub fn origin(&self) -> Point3 {
         self.orig
     }
-    pub fn direction(&self) -> vec3 {
+    pub fn direction(&self) -> Vec3 {
         self.dir
     }
-    pub fn at(&self, t: f64) -> point3 {
+    pub fn at(&self, t: f64) -> Point3 {
         self.orig + t * self.dir
     }
 }
