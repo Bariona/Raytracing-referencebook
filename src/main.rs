@@ -1,58 +1,50 @@
 // use std::io::Write;
+#![allow(non_snake_case)]
 mod VEC3;
 mod RAY;
 mod Hit;
-mod hit_base;
+mod sphere;
 
 // use std::os::windows::process;
 use VEC3::{Vec3, Color, Point3};
 use RAY::Ray;
-use hit_base::Hittable;
-use crate::Hit::{HittableList};
+use Hit::{HittableList};
+use sphere::Sphere;
 
-pub const pi: f64 = 3.14159265358979323846264338327950288f64;
-pub const inf: f64 = f64::INFINITY;
+pub const PI: f64 = 3.14159265358979323846264338327950288f64;
+pub const INF: f64 = f64::INFINITY;
 
-fn hit_shpere(center: Point3, radius: f64, r: Ray) -> f64 {
-    let oc = r.origin() - center;
-    let a = Vec3::dot(r.direction(), r.direction());
-    let b = 2.0 * Vec3::dot(oc, r.direction());
-    let c = Vec3::dot(oc, oc) - radius * radius;
-    let discrim = b * b - 4.0 * a * c;
-    if discrim < 0. {
-        -1.0 
-    } else {
-        (-b - discrim.sqrt()) / (2.0 * a)
+fn ray_color(r: Ray, world: &HittableList) -> Color {
+    if let Some(rec) = world.hit(&r, 0., INF) {
+        return 0.5 * (rec.normal + Color{x: 1., y: 1., z: 1.});
     }
-}
-fn Ray_Color(r: Ray) -> Color {
-    let t = hit_shpere(Point3{x: 0., y: 0., z: -1.0}, 0.5, r);
-    if t > 0. {
-        let n = r.at(t) - Vec3{x: 0., y: 0., z: -1.0};
-        // if N.len() != 1.0 {
-        //     eprint!("erro");
-        //     process::exit(0);
-        // }
-        0.5 * Color{x: n.x() + 1.0, y: n.y() + 1.0, z: n.z() + 1.0}
-    } else {
-        let unit = r.direction().unit_vector();
-        let t: f64 = 0.5 * (unit.y() + 1.0);
-        (1.0 - t) * Color{x: 1.0, y: 1.0, z: 1.0} + t * Color{x: 0.5, y: 0.7, z: 1.0}
-    }
+    let unit = r.direction().unit_vector();
+    let t: f64 = 0.5 * (unit.y() + 1.);
+    (1.0 - t) * Color{x: 1., y: 1., z: 1.} + t * Color{x: 0.5, y: 0.7, z: 1.}
+    
 }
 
 fn main() {
 
     // Image
-    const ratio: f64 = 16.0 / 9.0;    
+    const RATIO: f64 = 16.0 / 9.0;    
     const IMAGE_WIDTH: u32 = 400;
-    const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / ratio) as u32;
+    const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / RATIO) as u32;
 
     // World
-    let mut world: HittableList::default();
+    let mut world = HittableList::default();
+    world.objects.push(Box::new(Sphere{
+        center: Point3{x: 0., y: 0., z: -1.},
+        radius: 0.5,
+    }));
+    world.objects.push(Box::new(Sphere{
+        center: Point3{x: 0., y: -100.5, z: -1.},
+        radius: 100.,
+    }));
+
     // Camera
     let viewport_height = 2.0;
-    let viewport_width = viewport_height * ratio;
+    let viewport_width = viewport_height * RATIO;
     let focal_length = 1.0;
 
     let origin = Point3 {x: 0., y: 0., z: 0.};
@@ -73,13 +65,13 @@ fn main() {
             let u = (i as f64) / ((IMAGE_WIDTH - 1) as f64);
             let v = (j as f64) / ((IMAGE_HEIGHT - 1) as f64);
             let r = Ray{orig: origin, dir: lower_left_corner + u * horizontal + v * vertical - origin};
-            let pixel_color = Ray_Color(r);
-            write_Color(pixel_color);
+            let pixel_color = ray_color(r, &world);
+            write_color(pixel_color);
         }
     }
 }
 
-fn write_Color(col: Color) {
+fn write_color(col: Color) {
     println!("{} {} {}", 
         col.x() * 255.999, 
         col.y() * 255.999,
