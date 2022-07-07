@@ -1,6 +1,9 @@
-pub use super::VEC3::{Vec3, Point3};
-pub use super::RAY::Ray;
-pub use super::Hit::{HitRecord, Hittable};
+pub use crate::basic::{
+    VEC3::{Vec3, Point3},
+    RAY::Ray,
+    
+};
+use super::super::Hit::{HitRecord, Hittable};
 
 #[derive(Default, Copy, Clone, Debug)]
 pub struct Sphere {

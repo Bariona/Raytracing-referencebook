@@ -1,10 +1,12 @@
-pub use super::VEC3::{Point3, Vec3};
-pub use super::RAY::Ray;
+pub use crate::basic::{
+    VEC3::{Point3, Vec3},
+    RAY::Ray,
+};
 
 #[derive(Default, Copy, Clone, Debug)]
 pub struct HitRecord {
     pub p: Point3, // 碰撞点 
-    pub normal: Vec3, // 法向量
+    pub normal: Vec3, // 碰撞点的法向量(与Ray的方向相反)
     pub t: f64, // 表示 p = Ray(t) 
     pub front_face: bool, // 是否Ray来自外侧
 }
@@ -20,7 +22,7 @@ impl HitRecord {
     }
 }
 
-// ---- trait ----
+// ---- Hittable trait ----
 pub trait Hittable {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
