@@ -17,12 +17,11 @@ use basic::{
     camera::Camera,
 };
 use Hit::{HittableList};
-use material::ScatterRecord;
 use obj::sphere::Sphere;
 
-use crate::material::{lambertian::Lambertian, matel::Metal};
+use crate::material::{lambertian::Lambertian, matel::Metal, dielectric::Dielectric};
 
-pub const PI: f64 = 3.14159265358979323846264338327950288f64;
+pub const PI: f64 = std::f64::consts::PI;
 pub const INF: f64 = f64::INFINITY;
 
 fn ray_color(r: Ray, world: &HittableList, depth: usize) -> Color {
@@ -60,9 +59,9 @@ fn main() {
     // World
     let mut world = HittableList::default();
     let material_ground = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let material_center = Arc::new(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
-    let material_left = Arc::new(Metal::new(Color::new(0.8, 0.8, 0.8)));
-    let material_right = Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2)));
+    let material_center = Arc::new(Dielectric::new(1.5));
+    let material_left = Arc::new(Dielectric::new(1.5));
+    let material_right = Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.));
 
     world.objects.push(Box::new(Sphere{
         center: Point3::new(0., -100.5, -1.),
@@ -87,8 +86,6 @@ fn main() {
     // Camera
     let cam = Camera::default();
 
-    // eprintln!("{} {:?}", lower_left_corner.len(), lower_left_corner.unit_vector().len());
-    // std::process::exit(0);
     // Render
 
     println!(
@@ -107,10 +104,6 @@ fn main() {
     progress.set_style(ProgressStyle::default_bar()
         .template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] [{pos}/{len}] ({eta})")
         .progress_chars("#>-"));
-
-    // println!("P3");
-    // print!("{} {}\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
-
 
     for j in (0..IMAGE_HEIGHT).rev() {
         for i in 0..IMAGE_WIDTH {

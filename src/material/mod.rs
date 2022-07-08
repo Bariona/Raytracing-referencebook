@@ -1,5 +1,6 @@
 pub mod lambertian;
 pub mod matel;
+pub mod dielectric;
 
 pub use crate::{
     basic::{
