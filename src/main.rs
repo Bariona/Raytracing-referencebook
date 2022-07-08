@@ -97,7 +97,7 @@ fn main() {
                 let r = cam.get_ray(u, v);
                 pixel_color += ray_color(r, &world, MAX_DEPTH);
             }
-
+            
             let pixel = img.get_pixel_mut(i, IMAGE_HEIGHT - j - 1);
             *pixel = image::Rgb(write_color(pixel_color, SAMPLES_PER_PIXEL));
             progress.inc(1);
@@ -136,9 +136,9 @@ fn write_color(pixel_color: Color, samples_per_pixel: usize) -> [u8; 3] {
     let mut b = pixel_color.z();
 
     let scale = 1.0 / (samples_per_pixel as f64);
-    r *= scale;
-    g *= scale;
-    b *= scale;
+    r = (r * scale).sqrt();
+    g = (g * scale).sqrt();
+    b = (b * scale).sqrt();
 
     [
         (256. * clamp(r, 0., 0.999)) as u8, 
