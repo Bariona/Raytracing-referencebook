@@ -7,3 +7,6 @@ edition = "2021"
 
 [dependencies]
 rand = "0.8.5"
+image = "0.23"
+console = "0.9.1"    # console text format
+indicatif = "0.16.2" # progress bar
