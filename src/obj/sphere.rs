@@ -1,3 +1,6 @@
+use std::{sync::Arc};
+
+use crate::Hit::Material;
 pub use crate::basic::{
     VEC3::{Vec3, Point3},
     RAY::Ray,
@@ -5,18 +8,19 @@ pub use crate::basic::{
 };
 use super::super::Hit::{HitRecord, Hittable};
 
-#[derive(Default, Copy, Clone, Debug)]
 pub struct Sphere {
     pub center: Point3, 
     pub radius: f64,
+    pub mat: Arc<dyn Material>,
     // pub hit: HitRecord,
 }
 
 impl Hittable for Sphere {
+
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = r.origin() - self.center;
         let a = r.direction().len_square();
-        let half_b = Vec3::dot(oc, r.direction());
+        let half_b = Vec3::dot(&oc, &r.direction());
         let c = oc.len_square() - self.radius * self.radius;
 
         let discrim = half_b * half_b - a * c;
@@ -39,6 +43,7 @@ impl Hittable for Sphere {
             p: r.at(root),
             normal: Vec3::default(),
             front_face: bool::default(), 
+            mat: (self.mat).clone(),
         };
         let outward_normal = (rec.p - self.center) / self.radius;
         rec.set_face_normal(r, &outward_normal);

@@ -13,6 +13,10 @@ pub struct Vec3 {
 pub type Color = Vec3;
 pub type Point3 = Vec3;
 
+const EPS: f64 = 1e-8;
+
+
+
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x: x, y: y, z: z }
@@ -20,18 +24,28 @@ impl Vec3 {
     pub fn x(&self) -> f64 { self.x }
     pub fn y(&self) -> f64 { self.y }
     pub fn z(&self) -> f64 { self.z }
+
+    pub fn reflect(&self, n: &Vec3) -> Self {
+        *self - 2. * Vec3::dot(self, n) * (*n)
+    }
+    pub fn dot(&self, rhs: &Vec3) -> f64 {
+        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
+    }
+    
+    pub fn near_zero(&self) -> bool {
+        self.x.abs() < EPS && self.y.abs() < EPS && self.z.abs() < EPS
+    }
     pub fn len_square(&self) -> f64 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
     pub fn len(&self) -> f64 {
         self.len_square().sqrt()
     }
-    pub fn dot(self, rhs: Vec3) -> f64 {
-        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
-    }
     pub fn unit_vector(self) -> Vec3 {
         self / (&self).len()
     }
+
+    // ---- random ----
     pub fn random() -> Self {
         Self { x: random_double(), y: random_double(), z: random_double() }
     }
@@ -42,8 +56,19 @@ impl Vec3 {
             z: random_range(min, max),
         }
     }
-    pub fn radom_in_unit_shpere() -> Self {
+    pub fn random_in_unit_sphere() -> Self {
         Vec3::random_range(-1., 1.).unit_vector() * random_double()
+    }
+    pub fn random_in_hemishpere(normal: &Vec3) -> Self {
+        let p = Vec3::random_in_unit_sphere();
+        if Vec3::dot(&p, normal) > 0. {
+            p
+        } else {
+            -p
+        }
+    }
+    pub fn random_unit_vector() -> Self {
+        Vec3::random_range(-1., 1.).unit_vector()
     }
 }
 

@@ -1,10 +1,11 @@
 #![allow(non_snake_case)]
-mod Hit;
-mod obj;
-mod basic;
+pub mod Hit;
+pub mod obj;
+pub mod basic;
+pub mod material;
 
 // use std::os::windows::process;
-use std::{fs::File, process::exit};
+use std::{fs::File, process::exit, sync::Arc};
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::{ProgressBar, ProgressStyle};
@@ -16,7 +17,10 @@ use basic::{
     camera::Camera,
 };
 use Hit::{HittableList};
+use material::ScatterRecord;
 use obj::sphere::Sphere;
+
+use crate::material::{lambertian::Lambertian, matel::Metal};
 
 pub const PI: f64 = 3.14159265358979323846264338327950288f64;
 pub const INF: f64 = f64::INFINITY;
@@ -26,9 +30,13 @@ fn ray_color(r: Ray, world: &HittableList, depth: usize) -> Color {
         return Color::new(0., 0., 0.);
     }
 
-    if let Some(rec) = world.hit(&r, 0., INF) {
-        let target: Point3 = rec.p + rec.normal + Vec3::radom_in_unit_shpere();
-        return 0.5 * ray_color(Ray::new(rec.p, target - rec.p), world, depth - 1);
+    if let Some(rec) = world.hit(&r, 0.001, INF) {
+        if let Some(ScatterRecord) = (rec.mat).scatter(&r, &rec) {
+            return ScatterRecord.attenuation * ray_color(ScatterRecord.scattered, world, depth - 1);
+        }
+        return Color::new(0., 0., 0.);
+        // let target: Point3 = rec.p + Vec3::random_in_hemishpere(&rec.normal);
+        // return 0.5 * ray_color(Ray::new(rec.p, target - rec.p), world, depth - 1);
     }
     
     let unit_direction = r.direction().unit_vector();
@@ -51,15 +59,31 @@ fn main() {
 
     // World
     let mut world = HittableList::default();
-    world.objects.push(Box::new(Sphere{
-        center: Point3::new(0., 0., -1.),
-        radius: 0.5,
-    }));
+    let material_ground = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
+    let material_center = Arc::new(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
+    let material_left = Arc::new(Metal::new(Color::new(0.8, 0.8, 0.8)));
+    let material_right = Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2)));
+
     world.objects.push(Box::new(Sphere{
         center: Point3::new(0., -100.5, -1.),
-        radius: 100.,
+        radius: 100., 
+        mat: material_ground,
     }));
-
+    world.objects.push(Box::new(Sphere{
+        center: Point3::new(0., 0., -1.),
+        radius: 0.5, 
+        mat: material_center,
+    }));
+    world.objects.push(Box::new(Sphere{
+        center: Point3::new(-1., 0., -1.),
+        radius: 0.5, 
+        mat: material_left,
+    }));
+    world.objects.push(Box::new(Sphere{
+        center: Point3::new(1., 0., -1.),
+        radius: 0.5, 
+        mat: material_right,
+    }));
     // Camera
     let cam = Camera::default();
 
