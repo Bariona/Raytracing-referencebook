@@ -1,12 +1,5 @@
-[package]
-name = "Raytracer"
-version = "0.1.0"
-edition = "2021"
+[workspace]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-rand = "0.8.5"
-image = "0.23"
-console = "0.9.1"    # console text format
-indicatif = "0.16.2" # progress bar
+members = [
+    "raytracer"
+]
