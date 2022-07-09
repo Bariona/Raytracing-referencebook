@@ -1,6 +1,6 @@
 use super::{
     VEC3::{Point3, Vec3},
-    RAY::Ray,
+    RAY::Ray, degree_to_radians,
 };
 
 #[derive(Debug)]
@@ -9,34 +9,53 @@ pub struct Camera {
     lower_left_corner: Point3,
     horizontal: Vec3,
     vertical: Vec3,
+    u: Vec3, v: Vec3, w: Vec3,
+    lens_radius: f64, 
 }
 
-impl Default for Camera {
-    fn default() -> Self {
-        let aspect_ratio = 16. / 9.;
-        let viewport_height = 2.;
+impl Camera {
+    pub fn new(
+        lfrom: Point3, 
+        lat: Point3, 
+        vup : Vec3,  // view up
+        vfov: f64, // 视野范围 [0, 180']
+        aspect_ratio: f64, // 比例 
+        aperture: f64, // 光圈大小
+        focus_dist: f64, 
+    ) -> Self {
+        let theta = degree_to_radians(vfov);
+        let h = (theta / 2.).tan();
+        let viewport_height = 2. * h;
         let viewport_width = aspect_ratio * viewport_height;
-        let focal_length = 1.;
 
-        let origin = Point3::default();
-        let horizontal = Vec3{x: viewport_width, y: 0., z: 0.};
-        let vertical = Vec3{x: 0., y: viewport_height, z: 0.};
-        let lower_left_corner = origin - horizontal / 2. - vertical / 2. - Vec3::new(0., 0., focal_length);
+        // let focal_length = 1.;
+
+        let w = (lfrom - lat).unit_vector();
+        let u = Vec3::cross(&vup, &w).unit_vector();
+        let v = Vec3::cross(&w, &u);
+
+        let origin = lfrom;
+        let horizontal = focus_dist * viewport_width * u;
+        let vertical = focus_dist * viewport_height * v;
+        let lower_left_corner = origin - horizontal / 2. - vertical / 2. - focus_dist * w;
 
         Camera {
             origin: origin,
             horizontal: horizontal,
             vertical: vertical,
             lower_left_corner: lower_left_corner, 
+            u: u, v: v, w: w,
+            lens_radius: aperture / 2.
         }
     }
-}
 
-impl Camera {
-    pub fn get_ray(&self, u: f64, v: f64) -> Ray {
-        Ray { 
-            orig: self.origin, 
-            dir: self.lower_left_corner + u * self.horizontal + v * self.vertical - self.origin
+    pub fn get_ray(&self, s: f64, t: f64) -> Ray {
+        let rd = self.lens_radius * Vec3::random_in_unit_disk();
+        let offset = self.u * rd.x() + self.v * rd.y(); // defocus的偏移量
+
+        Ray {
+            orig: self.origin + offset,
+            dir: self.lower_left_corner + s * self.horizontal + t * self.vertical - self.origin - offset,
         }
     }
 }

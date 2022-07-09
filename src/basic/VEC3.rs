@@ -1,7 +1,7 @@
 use std::ops::{Neg, AddAssign, MulAssign, DivAssign};
 use std::ops::{Add, Sub, Mul, Div};
 
-use super::{random_double, random_range};
+use super::{random_double, random_range, min};
 
 #[derive(Default, Copy, Clone, Debug)]
 pub struct Vec3 {
@@ -14,10 +14,6 @@ pub type Color = Vec3;
 pub type Point3 = Vec3;
 
 const EPS: f64 = 1e-8;
-
-fn min(x: f64, y: f64) -> f64 {
-    if x < y { x } else { y }
-}
 
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
@@ -39,6 +35,13 @@ impl Vec3 {
 
     pub fn dot(&self, rhs: &Vec3) -> f64 {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
+    }
+    pub fn cross(&self, rhs: &Self) -> Self {
+        Self { 
+            x: self.y * rhs.z - self.z * rhs.y, 
+            y: -self.x * rhs.z + self.z * rhs.x,
+            z: self.x * rhs.y - self.y * rhs.x,
+        }
     }
     
     pub fn near_zero(&self) -> bool {
@@ -78,6 +81,9 @@ impl Vec3 {
     }
     pub fn random_unit_vector() -> Self {
         Vec3::random_range(-1., 1.).unit_vector()
+    }
+    pub fn random_in_unit_disk() -> Self {
+        Vec3::new(random_range(-1., 1.), random_range(-1., 1.), 0.).unit_vector() * random_double()
     }
 }
 

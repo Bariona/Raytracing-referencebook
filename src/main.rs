@@ -17,9 +17,6 @@ use basic::{
     camera::Camera,
 };
 use Hit::{HittableList};
-use obj::sphere::Sphere;
-
-use crate::material::{lambertian::Lambertian, matel::Metal, dielectric::Dielectric};
 
 pub const PI: f64 = std::f64::consts::PI;
 pub const INF: f64 = f64::INFINITY;
@@ -47,44 +44,30 @@ fn ray_color(r: Ray, world: &HittableList, depth: usize) -> Color {
 fn main() {
 
     // Image
-    const RATIO: f64 = 16.0 / 9.0;    
-    const IMAGE_WIDTH: u32 = 400;
+    const RATIO: f64 = 3.0 / 2.0;    
+    const IMAGE_WIDTH: u32 = 1200;
     const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / RATIO) as u32;
-    const SAMPLES_PER_PIXEL: usize = 100;
+    const SAMPLES_PER_PIXEL: usize = 500;
     const MAX_DEPTH: usize = 50;
 
     let quality = 100;
     let path = "output/output.jpg";
 
     // World
-    let mut world = HittableList::default();
-    let material_ground = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let material_center = Arc::new(Dielectric::new(1.5));
-    let material_left = Arc::new(Dielectric::new(1.5));
-    let material_right = Arc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.));
+    let world = HittableList::random_scene();
 
-    world.objects.push(Box::new(Sphere{
-        center: Point3::new(0., -100.5, -1.),
-        radius: 100., 
-        mat: material_ground,
-    }));
-    world.objects.push(Box::new(Sphere{
-        center: Point3::new(0., 0., -1.),
-        radius: 0.5, 
-        mat: material_center,
-    }));
-    world.objects.push(Box::new(Sphere{
-        center: Point3::new(-1., 0., -1.),
-        radius: 0.5, 
-        mat: material_left,
-    }));
-    world.objects.push(Box::new(Sphere{
-        center: Point3::new(1., 0., -1.),
-        radius: 0.5, 
-        mat: material_right,
-    }));
     // Camera
-    let cam = Camera::default();
+    let lf = Point3::new(13., 2., 3.);
+    let la = Point3::new(0., 0., 0.);
+    let cam = Camera::new(
+        lf, 
+        la,
+        Vec3::new(0., 1., 0.), 
+        20., 
+        RATIO,
+        0.1,
+        10.,
+    );
 
     // Render
 
@@ -134,7 +117,6 @@ fn main() {
 
     exit(0);
 }
-
 
 fn clamp(x: f64, min: f64, max: f64) -> f64 {
     if x < min {

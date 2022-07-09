@@ -1,12 +1,20 @@
 use std::{sync::Arc};
 
+use crate::basic;
 pub use crate::{
     basic::{
-        VEC3::{Point3, Vec3},
+        random_double,
+        VEC3::{Point3, Vec3, Color},
         RAY::Ray,
     },
+    obj::sphere::Sphere,
+    material::{
+        Material,
+        lambertian::Lambertian, 
+        dielectric::Dielectric,
+        matel::Metal,
+    }
 };
-pub use crate::material::Material;
 
 pub struct HitRecord {
     pub p: Point3, // 碰撞点 
@@ -41,10 +49,10 @@ pub trait Hittable {
 
 #[derive(Default)]
 pub struct HittableList {
-    pub objects: Vec<Box<dyn Hittable>>,
+    pub objects: Vec<Arc<dyn Hittable>>,
 }
 
-impl  HittableList {
+impl HittableList {
     pub fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut hit_rec = None;
         let mut closest_so_far = t_max;
@@ -58,4 +66,70 @@ impl  HittableList {
 
         hit_rec
     }
+    pub fn random_scene() -> Self {
+        let mut world = HittableList::default();
+        let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+        world.objects.push(Arc::new(Sphere{
+            center: Point3::new(0., -1000., 0.),
+            radius: 1000., 
+            mat: ground_material,
+        })); 
+        for a in -11..11 {
+            for b in -11..11 {
+                let mat = random_double();
+                let center = Point3::new(a as f64 + 0.9 * random_double(), 0.2, b as f64 + 0.9 * random_double());
+
+                if (center - Vec3::new(4., 0.2, 0.)).len() > 0.9 {
+                    if mat < 0.8 {
+                        // disffuse
+                        let albedo = Color::random();
+                        let sph_mat = Arc::new(Lambertian::new(albedo));
+                        world.objects.push(Arc::new(Sphere{
+                            center: center,
+                            radius: 0.2,
+                            mat: sph_mat,
+                        }));
+                    } else if mat < 0.95 {
+                        // metal
+                        let albedo = Color::random_range(0.5, 1.);
+                        let fuzz = basic::random_range(0., 0.5);
+                        let sph_mat = Arc::new(Metal::new(albedo, fuzz));
+                        world.objects.push(Arc::new(Sphere{
+                            center: center,
+                            radius: 0.2,
+                            mat: sph_mat,
+                        }));
+                    } else {
+                        // glass
+                        let sph_mat = Arc::new(Dielectric::new(1.5));
+                        world.objects.push(Arc::new(Sphere{
+                            center: center,
+                            radius: 0.2,
+                            mat: sph_mat,
+                        }));
+                    }
+                }
+            }
+        }  
+        let sph_mat1 = Arc::new(Dielectric::new(1.5));
+        world.objects.push(Arc::new(Sphere{
+            center: Point3::new(0., 1., 0.),
+            radius: 1.,
+            mat: sph_mat1,
+        }));
+        let sph_mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+        world.objects.push(Arc::new(Sphere{
+            center: Point3::new(-4., 1., 0.),
+            radius: 1.,
+            mat: sph_mat2,
+        }));
+        let sph_mat3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.));
+        world.objects.push(Arc::new(Sphere{
+            center: Point3::new(4., 1., 0.),
+            radius: 1.,
+            mat: sph_mat3,
+        }));
+        world
+    }
+   
 }
