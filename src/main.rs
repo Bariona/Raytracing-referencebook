@@ -72,8 +72,9 @@ fn main() {
     // Render
 
     println!(
-        "Image size: {}\nImage type: PPM",
+        "Image size: {}\nJPEG quality: {}",
         style(IMAGE_WIDTH.to_string() + &"x".to_string() + &IMAGE_HEIGHT.to_string()).yellow(),
+        style(quality.to_string()).yellow(),
     );
     // Create image data
     let mut img: RgbImage = ImageBuffer::new(IMAGE_WIDTH, IMAGE_HEIGHT);
