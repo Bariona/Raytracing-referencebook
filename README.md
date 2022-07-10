@@ -2,7 +2,9 @@
 
 Outline:
 
-- Rust语言实现[《RayTracing In One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)》
+- Reference Book:[《RayTracing In One Weekend》](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
+
+- Goal: accomplish with Rust 
 
 Current Progress:
 
