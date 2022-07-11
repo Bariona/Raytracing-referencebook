@@ -18,9 +18,6 @@ impl Ray {
     }
 
     pub fn new(ori: Point3, di: Vec3) -> Self {
-        Self {
-            orig: ori,
-            dir: di,
-        }
+        Self { orig: ori, dir: di }
     }
 }

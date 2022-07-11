@@ -17,7 +17,11 @@ const EPS: f64 = 1e-8;
 
 impl Vec3 {
     pub fn new(_x: f64, _y: f64, _z: f64) -> Self {
-        Self { x: _x, y: _y, z: _z }
+        Self {
+            x: _x,
+            y: _y,
+            z: _z,
+        }
     }
     pub fn x(&self) -> f64 {
         self.x
