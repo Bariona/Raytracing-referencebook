@@ -1,14 +1,13 @@
-#![allow(non_snake_case, unused_variables)]
+#![allow(non_snake_case)]
 pub mod Hit;
 pub mod basic;
 pub mod material;
 pub mod obj;
 
-// use std::os::windows::process;
 use console::style;
 use image::{ImageBuffer, RgbImage};
-use indicatif::{ProgressBar, ProgressStyle};
-use std::{fs::File, process::exit};
+use indicatif::{ProgressBar, ProgressStyle, MultiProgress};
+use std::{fs::File, process::exit, sync::{Arc, mpsc}, thread};
 
 use basic::{
     camera::Camera,
@@ -32,8 +31,6 @@ fn ray_color(r: Ray, world: &HittableList, depth: i32) -> Color {
                 * ray_color(ScatterRecord.scattered, world, depth - 1);
         }
         return Color::new(0., 0., 0.);
-        // let target: Point3 = rec.p + Vec3::random_in_hemishpere(&rec.normal);
-        // return 0.5 * ray_color(Ray::new(rec.p, target - rec.p), world, depth - 1);
     }
 
     let unit_direction = r.direction().unit_vector();
@@ -42,10 +39,12 @@ fn ray_color(r: Ray, world: &HittableList, depth: i32) -> Color {
 }
 
 fn main() {
+    const THREAD_NUMBER: usize = 3;
+
     // Image
     const RATIO: f64 = 3.0 / 2.0;
-    const IMAGE_WIDTH: u32 = 1200;
-    const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / RATIO) as u32;
+    const IMAGE_WIDTH: usize = 200;
+    const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / RATIO) as usize;
     const SAMPLES_PER_PIXEL: usize = 500;
     const MAX_DEPTH: i32 = 50;
 
@@ -56,46 +55,126 @@ fn main() {
     let world = HittableList::random_scene();
 
     // Camera
-    let lf = Point3::new(13., 2., 3.);
-    let la = Point3::new(0., 0., 0.);
+    let lf = Point3::new(13., 2., 3.); // look_from
+    let la = Point3::new(0., 0., 0.); // look_at
     let cam = Camera::new(lf, la, Vec3::new(0., 1., 0.), 20., RATIO, 0.1, 10.);
 
     // Render
+    println!(
+        "         Image size:                {}",
+        style(IMAGE_WIDTH.to_string() + &"x".to_string() + &IMAGE_HEIGHT.to_string()).yellow()
+    );
+    println!(
+        "         Sample number per pixel:   {}",
+        style(SAMPLES_PER_PIXEL.to_string()).yellow()
+    );
+    println!(
+        "         Reflection max depth:      {}",
+        style(MAX_DEPTH.to_string()).yellow()
+    );
 
+    const SECTION_LINE_NUM: usize = IMAGE_HEIGHT / THREAD_NUMBER;
+
+    let mut img: RgbImage = ImageBuffer::new(IMAGE_WIDTH as u32, IMAGE_HEIGHT as u32);
+    let mut output_pixel_color = Vec::<Color>::new(); // store pixels
+    let mut thread_pool = Vec::<_>::new(); // store closures
+
+    let multiprogress = Arc::new(MultiProgress::new());
+    multiprogress.set_move_cursor(true);
+    
+    for thread_id in 0..THREAD_NUMBER {
+        let line_beg = SECTION_LINE_NUM * thread_id;
+        let mut line_end = line_beg + SECTION_LINE_NUM;
+        if line_end > IMAGE_HEIGHT || (thread_id == THREAD_NUMBER - 1 && line_end < IMAGE_HEIGHT) {
+            line_end = IMAGE_HEIGHT;
+        }
+        
+        let mp = multiprogress.clone();
+        let progress_bar = mp.add(ProgressBar::new(
+            ((line_end - line_beg) * IMAGE_WIDTH) as u64,
+        ));
+        progress_bar.set_style(ProgressStyle::default_bar()
+        .template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] [{pos}/{len}] ({eta})")
+        .progress_chars("#>-"));
+
+        let (tx, rx) = mpsc::channel();
+
+        let clone_world = world.clone(); // due to multithread's ownership problem
+
+        thread_pool.push((
+            thread::spawn(move || {
+                let mut progress = 0;
+                progress_bar.set_position(0);
+
+                let channel_send = tx;
+
+                let mut section_pixel_color = Vec::<Color>::new();
+                
+                for j in line_beg..line_end {
+                    for i in 0..IMAGE_WIDTH {
+                        let mut pixel_color: Color = Color::new(0., 0., 0.);
+                        for _s in 0..SAMPLES_PER_PIXEL {
+                            let u = (i as f64 + random_double()) / (IMAGE_WIDTH as f64 - 1.);
+                            let v = (j as f64 + random_double()) / (IMAGE_HEIGHT as f64 - 1.);
+                            let r = cam.get_ray(u, v);
+                            pixel_color += ray_color(r, &clone_world, MAX_DEPTH);
+                        }
+                        section_pixel_color.push(pixel_color);
+                        progress += 1;
+                        progress_bar.set_position(progress);
+                    }
+                }
+                channel_send.send(section_pixel_color).unwrap();
+                progress_bar.finish_with_message("Finished.");
+            }),
+            rx,
+        ));
+    }
+
+    multiprogress.join().unwrap();
+
+    let mut thread_progress_finish: bool = true;
+    let collecting_progress_bar = ProgressBar::new(THREAD_NUMBER as u64);
+
+    for thread_id in 0..THREAD_NUMBER {
+        let thread = thread_pool.remove(0);
+        match thread.0.join() {
+            Ok(_) => {
+                let mut received = thread.1.recv().unwrap();
+                output_pixel_color.append(&mut received);
+                collecting_progress_bar.inc(1);
+            },
+            Err(_) => {
+                thread_progress_finish = false;
+                println!(
+                    "      ⚠️ {}{}{}",
+                    style("Joining the ").red(),
+                    style(thread_id.to_string()).yellow(),
+                    style("th thread failed!").red(),
+                );
+            },
+        }
+    }
+    if !thread_progress_finish {
+        println!("{}", style("RE").bold().red());
+        exit(1);
+    }
+    collecting_progress_bar.finish_and_clear();
+
+    let mut pixel_id = 0;
+    for j in 0..IMAGE_HEIGHT as u32 {
+        for i in 0..IMAGE_WIDTH as u32 {
+            let pixel_color = output_pixel_color[pixel_id];
+            let pixel = img.get_pixel_mut(i, IMAGE_HEIGHT as u32 - j - 1);
+            *pixel = image::Rgb(write_color(pixel_color, SAMPLES_PER_PIXEL));
+            pixel_id += 1;
+        }
+    }
     println!(
         "Image size: {}\nJPEG quality: {}",
         style(IMAGE_WIDTH.to_string() + &"x".to_string() + &IMAGE_HEIGHT.to_string()).yellow(),
         style(quality.to_string()).yellow(),
     );
-    // Create image data
-    let mut img: RgbImage = ImageBuffer::new(IMAGE_WIDTH, IMAGE_HEIGHT);
-    // Progress bar UI powered by library `indicatif`
-    // Get environment variable CI, which is true for GitHub Action
-    let progress = if option_env!("CI").unwrap_or_default() == "true" {
-        ProgressBar::hidden()
-    } else {
-        ProgressBar::new((IMAGE_HEIGHT * IMAGE_WIDTH) as u64)
-    };
-    progress.set_style(ProgressStyle::default_bar()
-        .template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] [{pos}/{len}] ({eta})")
-        .progress_chars("#>-"));
-
-    for j in (0..IMAGE_HEIGHT).rev() {
-        for i in 0..IMAGE_WIDTH {
-            let mut pixel_color: Color = Color::new(0., 0., 0.);
-            for s in 0..SAMPLES_PER_PIXEL {
-                let u = (i as f64 + random_double()) / (IMAGE_WIDTH as f64 - 1.);
-                let v = (j as f64 + random_double()) / (IMAGE_HEIGHT as f64 - 1.);
-                let r = cam.get_ray(u, v);
-                pixel_color += ray_color(r, &world, MAX_DEPTH);
-            }
-
-            let pixel = img.get_pixel_mut(i, IMAGE_HEIGHT - j - 1);
-            *pixel = image::Rgb(write_color(pixel_color, SAMPLES_PER_PIXEL));
-            progress.inc(1);
-        }
-    }
-    progress.finish();
 
     // Output image to file
     println!("Ouput image as \"{}\"", style(path).yellow());
@@ -137,3 +216,13 @@ fn write_color(pixel_color: Color, samples_per_pixel: usize) -> [u8; 3] {
         (256. * clamp(b, 0., 0.999)) as u8,
     ]
 }
+
+
+/*
+Questions:
+1. 多个tx, rx? 为什么不一个呢
+2. Send类型可以在线程间安全传递其所有权??? 可是都已经move了呀
+3. Sync + Send 的trait为什么是加在hittable trait后面? 是不是别的struct默认已经derive了Sync+Send
+    而且为什么一定要Sync + Send
+4. Cam(line 119)变量被调用为什么没有交出所有权
+*/

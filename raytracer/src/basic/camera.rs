@@ -4,7 +4,7 @@ use super::{
     VEC3::{Point3, Vec3},
 };
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Camera {
     origin: Point3,
     lower_left_corner: Point3,

@@ -35,14 +35,14 @@ impl HitRecord {
 // }
 
 // ---- Hittable trait ----
-pub trait Hittable {
+pub trait Hittable: Send + Sync {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
 
 // ---- Hittable List ----
 // 用于存储 Hittable 的 struct
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct HittableList {
     pub objects: Vec<Arc<dyn Hittable>>,
 }
