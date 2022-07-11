@@ -1,4 +1,4 @@
-#![allow(non_snake_case, unused_variables, clippy::redundant_field_names)]
+#![allow(non_snake_case, unused_variables)]
 pub mod Hit;
 pub mod basic;
 pub mod material;

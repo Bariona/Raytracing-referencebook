@@ -33,23 +33,23 @@ impl Camera {
 
         // let focal_length = 1.;
 
-        let w = (lfrom - lat).unit_vector();
-        let u = Vec3::cross(&vup, &w).unit_vector();
-        let v = Vec3::cross(&w, &u);
+        let _w = (lfrom - lat).unit_vector();
+        let _u = Vec3::cross(&vup, &_w).unit_vector();
+        let _v = Vec3::cross(&_w, &_u);
 
-        let origin = lfrom;
-        let horizontal = focus_dist * viewport_width * u;
-        let vertical = focus_dist * viewport_height * v;
-        let lower_left_corner = origin - horizontal / 2. - vertical / 2. - focus_dist * w;
+        let ori = lfrom;
+        let hori = focus_dist * viewport_width * _u;
+        let vert = focus_dist * viewport_height * _v;
+        let llc = ori - hori / 2. - vert / 2. - focus_dist * _w;
 
         Camera {
-            origin: origin,
-            horizontal: horizontal,
-            vertical: vertical,
-            lower_left_corner: lower_left_corner,
-            u: u,
-            v: v,
-            w: w,
+            origin: ori,
+            horizontal: hori,
+            vertical: vert,
+            lower_left_corner: llc,
+            u: _u,
+            v: _v,
+            w: _w,
             lens_radius: aperture / 2.,
         }
     }

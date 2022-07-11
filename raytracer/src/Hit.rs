@@ -1,4 +1,3 @@
-#![allow(clippy::redundant_field_names)]
 use std::sync::Arc;
 
 use crate::basic;
@@ -73,19 +72,19 @@ impl HittableList {
         for a in -11..11 {
             for b in -11..11 {
                 let mat = random_double();
-                let center = Point3::new(
+                let cen = Point3::new(
                     a as f64 + 0.9 * random_double(),
                     0.2,
                     b as f64 + 0.9 * random_double(),
                 );
 
-                if (center - Vec3::new(4., 0.2, 0.)).len() > 0.9 {
+                if (cen - Vec3::new(4., 0.2, 0.)).len() > 0.9 {
                     if mat < 0.8 {
                         // disffuse
                         let albedo = Color::random();
                         let sph_mat = Arc::new(Lambertian::new(albedo));
                         world.objects.push(Arc::new(Sphere {
-                            center: center,
+                            center: cen,
                             radius: 0.2,
                             mat: sph_mat,
                         }));
@@ -95,7 +94,7 @@ impl HittableList {
                         let fuzz = basic::random_range(0., 0.5);
                         let sph_mat = Arc::new(Metal::new(albedo, fuzz));
                         world.objects.push(Arc::new(Sphere {
-                            center: center,
+                            center: cen,
                             radius: 0.2,
                             mat: sph_mat,
                         }));
@@ -103,7 +102,7 @@ impl HittableList {
                         // glass
                         let sph_mat = Arc::new(Dielectric::new(1.5));
                         world.objects.push(Arc::new(Sphere {
-                            center: center,
+                            center: cen,
                             radius: 0.2,
                             mat: sph_mat,
                         }));

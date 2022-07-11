@@ -16,8 +16,8 @@ pub type Point3 = Vec3;
 const EPS: f64 = 1e-8;
 
 impl Vec3 {
-    pub fn new(x: f64, y: f64, z: f64) -> Self {
-        Self { x: x, y: y, z: z }
+    pub fn new(_x: f64, _y: f64, _z: f64) -> Self {
+        Self { x: _x, y: _y, z: _z }
     }
     pub fn x(&self) -> f64 {
         self.x

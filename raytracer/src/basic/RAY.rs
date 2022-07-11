@@ -17,10 +17,10 @@ impl Ray {
         self.orig + t * self.dir
     }
 
-    pub fn new(orig: Point3, dir: Vec3) -> Self {
+    pub fn new(ori: Point3, di: Vec3) -> Self {
         Self {
-            orig: orig,
-            dir: dir,
+            orig: ori,
+            dir: di,
         }
     }
 }
