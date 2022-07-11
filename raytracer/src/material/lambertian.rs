@@ -1,4 +1,4 @@
-use super::{Material, HitRecord, Vec3, Color, Ray, ScatterRecord};
+use super::{Color, HitRecord, Material, Ray, ScatterRecord, Vec3};
 
 pub struct Lambertian {
     pub albedo: Color,
@@ -20,6 +20,9 @@ impl Material for Lambertian {
         let sca = Ray::new(rec.p, scatter_direction);
         let att = self.albedo;
 
-        Some(ScatterRecord{attenuation: att, scattered: sca})
+        Some(ScatterRecord {
+            attenuation: att,
+            scattered: sca,
+        })
     }
 }

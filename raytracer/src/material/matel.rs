@@ -1,4 +1,4 @@
-use super::{Material, HitRecord, Vec3, Color, Ray, ScatterRecord};
+use super::{Color, HitRecord, Material, Ray, ScatterRecord, Vec3};
 
 pub struct Metal {
     pub albedo: Color,
@@ -7,8 +7,8 @@ pub struct Metal {
 
 impl Metal {
     pub fn new(al: Color, fuz: f64) -> Self {
-        Self { 
-            albedo: al, 
+        Self {
+            albedo: al,
             fuzz: if fuz < 1. { fuz } else { 1. },
         }
     }
@@ -20,9 +20,12 @@ impl Material for Metal {
 
         let sca = Ray::new(rec.p, reflected + self.fuzz * Vec3::random_in_unit_sphere());
         let att = self.albedo;
-        
+
         if Vec3::dot(&sca.direction(), &rec.normal) > 0. {
-            Some(ScatterRecord{attenuation: att, scattered: sca})
+            Some(ScatterRecord {
+                attenuation: att,
+                scattered: sca,
+            })
         } else {
             None
         }

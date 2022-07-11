@@ -1,8 +1,8 @@
-use super::VEC3::{Vec3, Point3};
+use super::VEC3::{Point3, Vec3};
 
 #[derive(Default, Copy, Clone, Debug)]
 pub struct Ray {
-    pub orig: Point3, 
+    pub orig: Point3,
     pub dir: Vec3,
 }
 
@@ -18,6 +18,9 @@ impl Ray {
     }
 
     pub fn new(orig: Point3, dir: Vec3) -> Self {
-        Self { orig: orig, dir: dir }
+        Self {
+            orig: orig,
+            dir: dir,
+        }
     }
 }

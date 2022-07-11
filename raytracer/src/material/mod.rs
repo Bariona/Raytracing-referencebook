@@ -1,18 +1,18 @@
+pub mod dielectric;
 pub mod lambertian;
 pub mod matel;
-pub mod dielectric;
 
 pub use crate::{
     basic::{
-        VEC3::{Vec3, Point3, Color},
         RAY::Ray,
+        VEC3::{Color, Point3, Vec3},
     },
     Hit::HitRecord,
 };
 
 pub struct ScatterRecord {
     pub attenuation: Color,
-    pub scattered: Ray, 
+    pub scattered: Ray,
 }
 
 pub trait Material {

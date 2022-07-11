@@ -1,54 +1,53 @@
-#![allow(non_snake_case)]
+#![allow(non_snake_case, unused_variables, clippy::redundant_field_names)]
 pub mod Hit;
-pub mod obj;
 pub mod basic;
 pub mod material;
+pub mod obj;
 
 // use std::os::windows::process;
-use std::{fs::File, process::exit, sync::Arc};
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::{ProgressBar, ProgressStyle};
+use std::{fs::File, process::exit};
 
 use basic::{
-    random_double,
-    VEC3::{Vec3, Color, Point3},
-    RAY::Ray, 
     camera::Camera,
+    random_double,
+    RAY::Ray,
+    VEC3::{Color, Point3, Vec3},
 };
-use Hit::{HittableList};
+use Hit::HittableList;
 
 pub const PI: f64 = std::f64::consts::PI;
 pub const INF: f64 = f64::INFINITY;
 
-fn ray_color(r: Ray, world: &HittableList, depth: usize) -> Color {
+fn ray_color(r: Ray, world: &HittableList, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new(0., 0., 0.);
     }
 
     if let Some(rec) = world.hit(&r, 0.001, INF) {
         if let Some(ScatterRecord) = (rec.mat).scatter(&r, &rec) {
-            return ScatterRecord.attenuation * ray_color(ScatterRecord.scattered, world, depth - 1);
+            return ScatterRecord.attenuation
+                * ray_color(ScatterRecord.scattered, world, depth - 1);
         }
         return Color::new(0., 0., 0.);
         // let target: Point3 = rec.p + Vec3::random_in_hemishpere(&rec.normal);
         // return 0.5 * ray_color(Ray::new(rec.p, target - rec.p), world, depth - 1);
     }
-    
+
     let unit_direction = r.direction().unit_vector();
     let t: f64 = 0.5 * (unit_direction.y() + 1.);
     (1.0 - t) * Color::new(1., 1., 1.) + t * Color::new(0.5, 0.7, 1.)
-    
 }
 
 fn main() {
-
     // Image
-    const RATIO: f64 = 3.0 / 2.0;    
+    const RATIO: f64 = 3.0 / 2.0;
     const IMAGE_WIDTH: u32 = 1200;
     const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / RATIO) as u32;
     const SAMPLES_PER_PIXEL: usize = 500;
-    const MAX_DEPTH: usize = 50;
+    const MAX_DEPTH: i32 = 50;
 
     let quality = 100;
     let path = "output/output.jpg";
@@ -59,15 +58,7 @@ fn main() {
     // Camera
     let lf = Point3::new(13., 2., 3.);
     let la = Point3::new(0., 0., 0.);
-    let cam = Camera::new(
-        lf, 
-        la,
-        Vec3::new(0., 1., 0.), 
-        20., 
-        RATIO,
-        0.1,
-        10.,
-    );
+    let cam = Camera::new(lf, la, Vec3::new(0., 1., 0.), 20., RATIO, 0.1, 10.);
 
     // Render
 
@@ -98,7 +89,7 @@ fn main() {
                 let r = cam.get_ray(u, v);
                 pixel_color += ray_color(r, &world, MAX_DEPTH);
             }
-            
+
             let pixel = img.get_pixel_mut(i, IMAGE_HEIGHT - j - 1);
             *pixel = image::Rgb(write_color(pixel_color, SAMPLES_PER_PIXEL));
             progress.inc(1);
@@ -129,8 +120,8 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
     }
 }
 
-// 在每个像素点周围(小范围)内采样sample_per_pixel次, 暴力取平均值 
-fn write_color(pixel_color: Color, samples_per_pixel: usize) -> [u8; 3] { 
+// 在每个像素点周围(小范围)内采样sample_per_pixel次, 暴力取平均值
+fn write_color(pixel_color: Color, samples_per_pixel: usize) -> [u8; 3] {
     let mut r = pixel_color.x();
     let mut g = pixel_color.y();
     let mut b = pixel_color.z();
@@ -141,9 +132,8 @@ fn write_color(pixel_color: Color, samples_per_pixel: usize) -> [u8; 3] {
     b = (b * scale).sqrt();
 
     [
-        (256. * clamp(r, 0., 0.999)) as u8, 
-        (256. * clamp(g, 0., 0.999)) as u8, 
+        (256. * clamp(r, 0., 0.999)) as u8,
+        (256. * clamp(g, 0., 0.999)) as u8,
         (256. * clamp(b, 0., 0.999)) as u8,
     ]
 }
-

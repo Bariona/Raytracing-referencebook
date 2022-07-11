@@ -1,11 +1,11 @@
-use std::ops::{Neg, AddAssign, MulAssign, DivAssign};
-use std::ops::{Add, Sub, Mul, Div};
+use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{AddAssign, DivAssign, MulAssign, Neg};
 
-use super::{random_double, random_range, min};
+use super::{min, random_double, random_range};
 
 #[derive(Default, Copy, Clone, Debug)]
 pub struct Vec3 {
-    pub x: f64, 
+    pub x: f64,
     pub y: f64,
     pub z: f64,
 }
@@ -19,9 +19,15 @@ impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self { x: x, y: y, z: z }
     }
-    pub fn x(&self) -> f64 { self.x }
-    pub fn y(&self) -> f64 { self.y }
-    pub fn z(&self) -> f64 { self.z }
+    pub fn x(&self) -> f64 {
+        self.x
+    }
+    pub fn y(&self) -> f64 {
+        self.y
+    }
+    pub fn z(&self) -> f64 {
+        self.z
+    }
 
     pub fn reflect(&self, n: &Vec3) -> Self {
         *self - 2. * Vec3::dot(self, n) * (*n)
@@ -37,13 +43,13 @@ impl Vec3 {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
     pub fn cross(&self, rhs: &Self) -> Self {
-        Self { 
-            x: self.y * rhs.z - self.z * rhs.y, 
+        Self {
+            x: self.y * rhs.z - self.z * rhs.y,
             y: -self.x * rhs.z + self.z * rhs.x,
             z: self.x * rhs.y - self.y * rhs.x,
         }
     }
-    
+
     pub fn near_zero(&self) -> bool {
         self.x.abs() < EPS && self.y.abs() < EPS && self.z.abs() < EPS
     }
@@ -59,12 +65,16 @@ impl Vec3 {
 
     // ---- random ----
     pub fn random() -> Self {
-        Self { x: random_double(), y: random_double(), z: random_double() }
+        Self {
+            x: random_double(),
+            y: random_double(),
+            z: random_double(),
+        }
     }
     pub fn random_range(min: f64, max: f64) -> Self {
-        Self { 
-            x: random_range(min, max), 
-            y: random_range(min, max), 
+        Self {
+            x: random_range(min, max),
+            y: random_range(min, max),
             z: random_range(min, max),
         }
     }
@@ -111,7 +121,7 @@ impl Sub for Vec3 {
 }
 impl Mul for Vec3 {
     type Output = Self;
-    
+
     fn mul(self, other: Self) -> Self::Output {
         Self {
             x: self.x * other.x,
@@ -122,7 +132,7 @@ impl Mul for Vec3 {
 }
 impl Mul<f64> for Vec3 {
     type Output = Self;
-    
+
     fn mul(self, other: f64) -> Self::Output {
         Self {
             x: self.x * other,
@@ -133,7 +143,7 @@ impl Mul<f64> for Vec3 {
 }
 impl Mul<Vec3> for f64 {
     type Output = Vec3;
-    
+
     fn mul(self, rhs: Vec3) -> Self::Output {
         Vec3 {
             x: self * rhs.x,
@@ -144,7 +154,7 @@ impl Mul<Vec3> for f64 {
 }
 impl Div<f64> for Vec3 {
     type Output = Self;
-    
+
     fn div(self, other: f64) -> Self::Output {
         Self {
             x: self.x / other,
@@ -158,7 +168,11 @@ impl Neg for Vec3 {
     type Output = Self;
 
     fn neg(self) -> Self {
-        Self { x: -self.x, y: -self.y, z: -self.z }
+        Self {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
+        }
     }
 }
 
