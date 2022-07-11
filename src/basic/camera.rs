@@ -17,11 +17,11 @@ impl Camera {
     pub fn new(
         lfrom: Point3, 
         lat: Point3, 
-        vup : Vec3,  // view up
+        vup : Vec3,  // view up vector
         vfov: f64, // 视野范围 [0, 180']
         aspect_ratio: f64, // 比例 
         aperture: f64, // 光圈大小
-        focus_dist: f64, 
+        focus_dist: f64, // object distance
     ) -> Self {
         let theta = degree_to_radians(vfov);
         let h = (theta / 2.).tan();
