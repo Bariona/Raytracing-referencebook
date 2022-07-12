@@ -3,7 +3,7 @@ use crate::Hit::{Color, Point3};
 use super::Texture;
 
 pub struct SolidColor {
-    pub color_val: Color
+    pub color_val: Color,
 }
 
 impl SolidColor {
@@ -11,7 +11,7 @@ impl SolidColor {
         Self {
             color_val: Color::new(r, g, b),
         }
-    }    
+    }
 }
 
 impl Texture for SolidColor {

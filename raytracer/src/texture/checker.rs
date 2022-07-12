@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
-use crate::Hit::{Point3, Color};
+use crate::Hit::{Color, Point3};
 
-use super::{Texture, solid_color::SolidColor};
+use super::{solid_color::SolidColor, Texture};
 
 pub struct Checker {
     pub odd: Arc<dyn Texture>,
@@ -11,12 +11,11 @@ pub struct Checker {
 
 impl Checker {
     pub fn new(c1: Color, c2: Color) -> Self {
-        Self { 
-            odd: Arc::new(SolidColor::new(c1.x, c1.y, c1.z)), 
+        Self {
+            odd: Arc::new(SolidColor::new(c1.x, c1.y, c1.z)),
             even: Arc::new(SolidColor::new(c2.x, c2.y, c2.z)),
         }
     }
-
 }
 
 impl Texture for Checker {

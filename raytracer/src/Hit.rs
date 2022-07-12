@@ -3,7 +3,8 @@ use std::sync::Arc;
 use crate::{
     basic::{self, random_range},
     bvh::aabb::{surrounding_box, AABB},
-    obj::move_sphere::MoveSphere, texture::checker::Checker,
+    obj::move_sphere::MoveSphere,
+    texture::{checker::Checker, perlin::Perlin},
 };
 pub use crate::{
     basic::{
@@ -91,9 +92,46 @@ impl Hittable for HittableList {
 }
 
 impl HittableList {
+    pub fn two_perlin_sphere() -> Self {
+        let mut world = HittableList::default();
+
+        let pertext = Arc::new(Perlin::new());
+
+        world.objects.push(Arc::new(Sphere {
+            center: Point3::new(0., -1000., 0.),
+            radius: 1000.,
+            mat: Arc::new(Lambertian::new_texture(pertext.clone())),
+        }));
+        world.objects.push(Arc::new(Sphere {
+            center: Point3::new(0., 2., 0.),
+            radius: 2.,
+            mat: Arc::new(Lambertian::new_texture(pertext.clone())),
+        }));
+        world
+    }
+    
+    pub fn two_sphere() -> Self {
+        let mut world = HittableList::default();
+        let checker = Arc::new(Checker::new(
+            Color::new(0.2, 0.3, 0.1),
+            Color::new(0.9, 0.9, 0.9),
+        ));
+        world.objects.push(Arc::new(Sphere {
+            center: Point3::new(0., -10., 0.),
+            radius: 10.,
+            mat: Arc::new(Lambertian::new_texture(checker.clone())),
+        }));
+        world.objects.push(Arc::new(Sphere {
+            center: Point3::new(0., 10., 0.),
+            radius: 10.,
+            mat: Arc::new(Lambertian::new_texture(checker.clone())),
+        }));
+        world
+    }
+
     pub fn random_scene() -> Self {
         let mut world = HittableList::default();
-        
+
         let checker = Arc::new(Checker::new(
             Color::new(0.2, 0.3, 0.1),
             Color::new(0.9, 0.9, 0.9),

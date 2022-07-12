@@ -9,6 +9,7 @@ pub mod texture;
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use rand::{thread_rng, Rng};
 use std::{
     fs::File,
     process::exit,
@@ -59,12 +60,37 @@ fn main() {
     let path = "output/output.jpg";
 
     // World
-    let world = HittableList::random_scene();
+    let switch = 1;
+    let world;
+    let mut aperture = 0.;
+
+    match switch {
+        0 => {
+            world = HittableList::two_sphere();
+        },
+        1 => {
+            world = HittableList::two_perlin_sphere();
+        }
+        _ => {
+            world = HittableList::random_scene();
+            aperture = 0.1;
+        }
+    }
 
     // Camera
     let lf = Point3::new(13., 2., 3.); // look_from
     let la = Point3::new(0., 0., 0.); // look_at
-    let cam = Camera::new(lf, la, Vec3::new(0., 1., 0.), 20., RATIO, 0.1, 10., 0., 1.);
+    let cam = Camera::new(
+        lf, 
+        la, 
+        Vec3::new(0., 1., 0.), 
+        20., 
+        RATIO, 
+        aperture, 
+        10., 
+        0., 
+        1.
+    );
 
     // Render
     println!(

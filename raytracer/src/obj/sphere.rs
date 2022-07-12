@@ -1,4 +1,4 @@
-use std::{sync::Arc, f64::consts::PI};
+use std::{f64::consts::PI, sync::Arc};
 
 use super::super::Hit::{HitRecord, Hittable};
 pub use crate::basic::{
@@ -63,7 +63,7 @@ impl Hittable for Sphere {
             u: tup[0],
             v: tup[1],
         };
-        
+
         rec.set_face_normal(r, &outward_normal);
 
         Some(rec)

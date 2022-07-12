@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::texture::{Texture, solid_color::SolidColor};
+use crate::texture::{solid_color::SolidColor, Texture};
 
 use super::{Color, HitRecord, Material, Ray, ScatterRecord, Vec3};
 
@@ -13,8 +13,8 @@ impl Lambertian {
         Self { albedo }
     }
     pub fn new(al: Color) -> Self {
-        Self { 
-            albedo: Arc::new(SolidColor::new(al.x, al.y, al.z))
+        Self {
+            albedo: Arc::new(SolidColor::new(al.x, al.y, al.z)),
         }
     }
 }
@@ -30,6 +30,7 @@ impl Material for Lambertian {
         let scattered = Ray::new(rec.p, scatter_direction, r_in.time());
         let attenuation = (self.albedo).value(rec.u, rec.v, &rec.p).unwrap();
 
+        // println!("{:?}", attenuation);
         Some(ScatterRecord {
             attenuation,
             scattered,
