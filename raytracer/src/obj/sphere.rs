@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, f64::consts::PI};
 
 use super::super::Hit::{HitRecord, Hittable};
 pub use crate::basic::{
@@ -12,6 +12,22 @@ pub struct Sphere {
     pub radius: f64,
     pub mat: Arc<dyn Material>,
     // pub hit: HitRecord,
+}
+
+impl Sphere {
+    pub fn get_sphere_uv(p: &Point3) -> Option<[f64; 2]> {
+        // p: a given point on the sphere of radius one, centered at the origin.
+        // u: returned value [0,1] of angle around the Y axis from X=-1.
+        // v: returned value [0,1] of angle from Y=-1 to Y=+1.
+        //     <1 0 0> yields <0.50 0.50>       <-1  0  0> yields <0.00 0.50>
+        //     <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
+        //     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
+
+        let theta = -p.y().acos();
+        let phi = p.x().atan2(-p.z()) + PI;
+
+        Some([phi / 2. / PI, theta / PI])
+    }
 }
 
 impl Hittable for Sphere {
@@ -36,14 +52,19 @@ impl Hittable for Sphere {
             }
         }
 
+        let outward_normal = (r.at(root) - self.center) / self.radius;
+        let tup = Self::get_sphere_uv(&outward_normal).unwrap();
+
         let mut rec = HitRecord {
             t: root,
             p: r.at(root),
             normal: Vec3::default(),
             front_face: bool::default(),
             mat: (self.mat).clone(),
+            u: tup[0],
+            v: tup[1],
         };
-        let outward_normal = (rec.p - self.center) / self.radius;
+        
         rec.set_face_normal(r, &outward_normal);
 
         Some(rec)

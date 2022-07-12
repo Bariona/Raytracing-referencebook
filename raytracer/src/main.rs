@@ -4,6 +4,7 @@ pub mod basic;
 pub mod bvh;
 pub mod material;
 pub mod obj;
+pub mod texture;
 
 use console::style;
 use image::{ImageBuffer, RgbImage};

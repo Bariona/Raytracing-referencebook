@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::{
     basic::{self, random_range},
     bvh::aabb::{surrounding_box, AABB},
-    obj::move_sphere::MoveSphere,
+    obj::move_sphere::MoveSphere, texture::checker::Checker,
 };
 pub use crate::{
     basic::{
@@ -21,6 +21,8 @@ pub struct HitRecord {
     pub t: f64,           // 表示 p = Ray(t)
     pub front_face: bool, // 是否Ray来自外侧
     pub mat: Arc<dyn Material>,
+    pub u: f64, // u, v 物体表面 surface的coordinates
+    pub v: f64, // u, v \in [0, 1]
 }
 
 impl HitRecord {
@@ -91,12 +93,19 @@ impl Hittable for HittableList {
 impl HittableList {
     pub fn random_scene() -> Self {
         let mut world = HittableList::default();
-        let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+        
+        let checker = Arc::new(Checker::new(
+            Color::new(0.2, 0.3, 0.1),
+            Color::new(0.9, 0.9, 0.9),
+        ));
+
+        // let ground_material = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
         world.objects.push(Arc::new(Sphere {
             center: Point3::new(0., -1000., 0.),
             radius: 1000.,
-            mat: ground_material,
+            mat: Arc::new(Lambertian::new_tx(checker)),
         }));
+
         for a in -11..11 {
             for b in -11..11 {
                 let mat = random_double();

@@ -26,6 +26,7 @@ impl MoveSphere {
             + (time - self.time0) / (self.time1 - self.time0) * (self.center1 - self.center0)
     }
 }
+
 impl Hittable for MoveSphere {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = r.origin() - self.center(r.time());
@@ -54,6 +55,8 @@ impl Hittable for MoveSphere {
             normal: Vec3::default(),
             front_face: bool::default(),
             mat: (self.mat).clone(),
+            u: 0.,
+            v: 0.,
         };
         let outward_normal = (rec.p - self.center(r.time())) / self.radius;
         rec.set_face_normal(r, &outward_normal);
