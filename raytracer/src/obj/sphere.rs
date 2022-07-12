@@ -11,7 +11,6 @@ pub struct Sphere {
     pub center: Point3,
     pub radius: f64,
     pub mat: Arc<dyn Material>,
-    // pub hit: HitRecord,
 }
 
 impl Sphere {

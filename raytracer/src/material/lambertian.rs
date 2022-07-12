@@ -9,7 +9,7 @@ pub struct Lambertian {
 }
 
 impl Lambertian {
-    pub fn new_tx(albedo: Arc<dyn Texture>) -> Self {
+    pub fn new_texture(albedo: Arc<dyn Texture>) -> Self {
         Self { albedo }
     }
     pub fn new(al: Color) -> Self {

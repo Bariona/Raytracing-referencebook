@@ -103,7 +103,7 @@ impl HittableList {
         world.objects.push(Arc::new(Sphere {
             center: Point3::new(0., -1000., 0.),
             radius: 1000.,
-            mat: Arc::new(Lambertian::new_tx(checker)),
+            mat: Arc::new(Lambertian::new_texture(checker)),
         }));
 
         for a in -11..11 {
