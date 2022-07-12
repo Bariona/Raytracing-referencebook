@@ -105,11 +105,11 @@ impl HittableList {
         world.objects.push(Arc::new(Sphere {
             center: Point3::new(0., 2., 0.),
             radius: 2.,
-            mat: Arc::new(Lambertian::new_texture(pertext.clone())),
+            mat: Arc::new(Lambertian::new_texture(pertext)),
         }));
         world
     }
-    
+
     pub fn two_sphere() -> Self {
         let mut world = HittableList::default();
         let checker = Arc::new(Checker::new(
@@ -124,7 +124,7 @@ impl HittableList {
         world.objects.push(Arc::new(Sphere {
             center: Point3::new(0., 10., 0.),
             radius: 10.,
-            mat: Arc::new(Lambertian::new_texture(checker.clone())),
+            mat: Arc::new(Lambertian::new_texture(checker)),
         }));
         world
     }
