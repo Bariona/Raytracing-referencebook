@@ -1,5 +1,6 @@
+#![allow(clippy::too_many_arguments)]
 use super::{
-    degree_to_radians,
+    degree_to_radians, random_range,
     RAY::Ray,
     VEC3::{Point3, Vec3},
 };
@@ -14,6 +15,8 @@ pub struct Camera {
     v: Vec3,
     w: Vec3,
     lens_radius: f64,
+    time0: f64,
+    time1: f64,
 }
 
 impl Camera {
@@ -25,6 +28,8 @@ impl Camera {
         aspect_ratio: f64, // 比例
         aperture: f64,     // 光圈大小
         focus_dist: f64,   // object distance
+        time0: f64,
+        time1: f64,
     ) -> Self {
         let theta = degree_to_radians(vfov);
         let h = (theta / 2.).tan();
@@ -33,24 +38,26 @@ impl Camera {
 
         // let focal_length = 1.;
 
-        let _w = (lfrom - lat).unit_vector();
-        let _u = Vec3::cross(&vup, &_w).unit_vector();
-        let _v = Vec3::cross(&_w, &_u);
+        let w = (lfrom - lat).unit_vector();
+        let u = Vec3::cross(&vup, &w).unit_vector();
+        let v = Vec3::cross(&w, &u);
 
         let ori = lfrom;
-        let hori = focus_dist * viewport_width * _u;
-        let vert = focus_dist * viewport_height * _v;
-        let llc = ori - hori / 2. - vert / 2. - focus_dist * _w;
+        let hori = focus_dist * viewport_width * u;
+        let vert = focus_dist * viewport_height * v;
+        let llc = ori - hori / 2. - vert / 2. - focus_dist * w;
 
         Camera {
             origin: ori,
             horizontal: hori,
             vertical: vert,
             lower_left_corner: llc,
-            u: _u,
-            v: _v,
-            w: _w,
+            u,
+            v,
+            w,
             lens_radius: aperture / 2.,
+            time0,
+            time1,
         }
     }
 
@@ -63,6 +70,7 @@ impl Camera {
             dir: self.lower_left_corner + s * self.horizontal + t * self.vertical
                 - self.origin
                 - offset,
+            tm: random_range(self.time0, self.time1),
         }
     }
 }

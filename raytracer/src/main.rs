@@ -1,13 +1,19 @@
 #![allow(non_snake_case)]
 pub mod Hit;
 pub mod basic;
+pub mod bvh;
 pub mod material;
 pub mod obj;
 
 use console::style;
 use image::{ImageBuffer, RgbImage};
-use indicatif::{ProgressBar, ProgressStyle, MultiProgress};
-use std::{fs::File, process::exit, sync::{Arc, mpsc}, thread};
+use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use std::{
+    fs::File,
+    process::exit,
+    sync::{mpsc, Arc},
+    thread,
+};
 
 use basic::{
     camera::Camera,
@@ -15,7 +21,7 @@ use basic::{
     RAY::Ray,
     VEC3::{Color, Point3, Vec3},
 };
-use Hit::HittableList;
+use Hit::{Hittable, HittableList};
 
 pub const PI: f64 = std::f64::consts::PI;
 pub const INF: f64 = f64::INFINITY;
@@ -42,10 +48,10 @@ fn main() {
     const THREAD_NUMBER: usize = 3;
 
     // Image
-    const RATIO: f64 = 3.0 / 2.0;
-    const IMAGE_WIDTH: usize = 200;
+    const RATIO: f64 = 16. / 9.;
+    const IMAGE_WIDTH: usize = 400;
     const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / RATIO) as usize;
-    const SAMPLES_PER_PIXEL: usize = 500;
+    const SAMPLES_PER_PIXEL: usize = 100;
     const MAX_DEPTH: i32 = 50;
 
     let quality = 100;
@@ -57,7 +63,7 @@ fn main() {
     // Camera
     let lf = Point3::new(13., 2., 3.); // look_from
     let la = Point3::new(0., 0., 0.); // look_at
-    let cam = Camera::new(lf, la, Vec3::new(0., 1., 0.), 20., RATIO, 0.1, 10.);
+    let cam = Camera::new(lf, la, Vec3::new(0., 1., 0.), 20., RATIO, 0.1, 10., 0., 1.);
 
     // Render
     println!(
@@ -81,14 +87,14 @@ fn main() {
 
     let multiprogress = Arc::new(MultiProgress::new());
     multiprogress.set_move_cursor(true);
-    
+
     for thread_id in 0..THREAD_NUMBER {
         let line_beg = SECTION_LINE_NUM * thread_id;
         let mut line_end = line_beg + SECTION_LINE_NUM;
         if line_end > IMAGE_HEIGHT || (thread_id == THREAD_NUMBER - 1 && line_end < IMAGE_HEIGHT) {
             line_end = IMAGE_HEIGHT;
         }
-        
+
         let mp = multiprogress.clone();
         let progress_bar = mp.add(ProgressBar::new(
             ((line_end - line_beg) * IMAGE_WIDTH) as u64,
@@ -109,7 +115,7 @@ fn main() {
                 let channel_send = tx;
 
                 let mut section_pixel_color = Vec::<Color>::new();
-                
+
                 for j in line_beg..line_end {
                     for i in 0..IMAGE_WIDTH {
                         let mut pixel_color: Color = Color::new(0., 0., 0.);
@@ -143,7 +149,7 @@ fn main() {
                 let mut received = thread.1.recv().unwrap();
                 output_pixel_color.append(&mut received);
                 collecting_progress_bar.inc(1);
-            },
+            }
             Err(_) => {
                 thread_progress_finish = false;
                 println!(
@@ -152,7 +158,7 @@ fn main() {
                     style(thread_id.to_string()).yellow(),
                     style("th thread failed!").red(),
                 );
-            },
+            }
         }
     }
     if !thread_progress_finish {
@@ -217,12 +223,11 @@ fn write_color(pixel_color: Color, samples_per_pixel: usize) -> [u8; 3] {
     ]
 }
 
-
 /*
 Questions:
-1. 多个tx, rx? 为什么不一个呢
-2. Send类型可以在线程间安全传递其所有权??? 可是都已经move了呀
-3. Sync + Send 的trait为什么是加在hittable trait后面? 是不是别的struct默认已经derive了Sync+Send
-    而且为什么一定要Sync + Send
-4. Cam(line 119)变量被调用为什么没有交出所有权
+1. 多个tx, rx? 为什么不一个呢: 方便期间
+2. Send类型可以在线程间安全传递其所有权??? 可是都已经move了呀: 但是可以通过channel之间传递
+3. Sync + Send 的trait为什么是加在hittable trait后面? 是不是别的struct默认已经derive了Sync+Send: 正确的
+    而且为什么一定要Sync + Send: 基本定义 (
+4. Cam(line 119)变量被调用为什么没有交出所有权: 因为Cam已经实现了copy, 没有实现copy的类型会直接转移所有权
 */

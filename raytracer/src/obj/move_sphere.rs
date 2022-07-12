@@ -5,18 +5,30 @@ pub use crate::basic::{
     RAY::Ray,
     VEC3::{Point3, Vec3},
 };
-use crate::{bvh::aabb::AABB, Hit::Material};
+use crate::{
+    bvh::aabb::{surrounding_box, AABB},
+    Hit::Material,
+};
 
-pub struct Sphere {
-    pub center: Point3,
+pub struct MoveSphere {
+    pub center0: Point3,
+    pub center1: Point3,
     pub radius: f64,
+    pub time0: f64,
+    pub time1: f64,
     pub mat: Arc<dyn Material>,
     // pub hit: HitRecord,
 }
 
-impl Hittable for Sphere {
+impl MoveSphere {
+    pub fn center(&self, time: f64) -> Point3 {
+        self.center0
+            + (time - self.time0) / (self.time1 - self.time0) * (self.center1 - self.center0)
+    }
+}
+impl Hittable for MoveSphere {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
-        let oc = r.origin() - self.center;
+        let oc = r.origin() - self.center(r.time());
         let a = r.direction().len_square();
         let half_b = Vec3::dot(&oc, &r.direction());
         let c = oc.len_square() - self.radius * self.radius;
@@ -43,14 +55,17 @@ impl Hittable for Sphere {
             front_face: bool::default(),
             mat: (self.mat).clone(),
         };
-        let outward_normal = (rec.p - self.center) / self.radius;
+        let outward_normal = (rec.p - self.center(r.time())) / self.radius;
         rec.set_face_normal(r, &outward_normal);
 
         Some(rec)
     }
 
-    fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<AABB> {
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<AABB> {
         let cub = Vec3::new(self.radius, self.radius, self.radius);
-        Some(AABB::new(self.center - cub, self.center + cub))
+        let box0 = AABB::new(self.center(time0) - cub, self.center(time0) + cub);
+        let box1 = AABB::new(self.center(time1) - cub, self.center(time1) + cub);
+
+        Some(surrounding_box(box0, box1))
     }
 }

@@ -1,7 +1,7 @@
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, Div, Index, Mul, Sub};
 use std::ops::{AddAssign, DivAssign, MulAssign, Neg};
 
-use super::{min, random_double, random_range};
+use super::{random_double, random_range};
 
 #[derive(Default, Copy, Clone, Debug)]
 pub struct Vec3 {
@@ -37,7 +37,7 @@ impl Vec3 {
         *self - 2. * Vec3::dot(self, n) * (*n)
     }
     pub fn refract(&self, n: &Self, etai_over_etat: f64) -> Self {
-        let cos_theta = min(-Vec3::dot(self, n), 1.);
+        let cos_theta = -Vec3::dot(self, n).min(1.);
         let r_out_perp = etai_over_etat * (*self + cos_theta * (*n));
         let r_out_parallel = -(1. - r_out_perp.len_square()).abs().sqrt() * (*n);
         r_out_perp + r_out_parallel
@@ -98,6 +98,19 @@ impl Vec3 {
     }
     pub fn random_in_unit_disk() -> Self {
         Vec3::new(random_range(-1., 1.), random_range(-1., 1.), 0.).unit_vector() * random_double()
+    }
+}
+
+impl Index<u32> for Vec3 {
+    type Output = f64;
+
+    fn index(&self, idx: u32) -> &f64 {
+        match idx {
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
+            _ => &0.,
+        }
     }
 }
 
