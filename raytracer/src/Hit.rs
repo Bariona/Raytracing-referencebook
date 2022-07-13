@@ -95,7 +95,7 @@ impl HittableList {
     pub fn two_perlin_sphere() -> Self {
         let mut world = HittableList::default();
 
-        let pertext = Arc::new(Perlin::new());
+        let pertext = Arc::new(Perlin::new(4.));
 
         world.objects.push(Arc::new(Sphere {
             center: Point3::new(0., -1000., 0.),

@@ -14,10 +14,11 @@ pub struct Perlin {
     pub perm_y: Vec<usize>,
     pub perm_z: Vec<usize>,
     pub ranfloat: Vec<f64>,
+    pub scale: f64,
 }
 
 impl Perlin {
-    pub fn new() -> Self {
+    pub fn new(scale: f64) -> Self {
         let mut ranfloat = vec![0.; POINT_COUNT];
         for item in ranfloat.iter_mut().take(POINT_COUNT) {
             *item = random_double();
@@ -32,6 +33,7 @@ impl Perlin {
             perm_y,
             perm_z,
             ranfloat,
+            scale,
         }
     }
 
@@ -100,6 +102,6 @@ impl Perlin {
 
 impl Texture for Perlin {
     fn value(&self, _u: f64, _v: f64, p: &Point3) -> Option<crate::Hit::Color> {
-        Some(Color::new(1., 1., 1.) * self.noise(p))
+        Some(Color::new(1., 1., 1.) * self.noise(&(self.scale * (*p))))
     }
 }
