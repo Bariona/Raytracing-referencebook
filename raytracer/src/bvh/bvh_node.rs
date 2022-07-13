@@ -48,17 +48,20 @@ impl BvhNode {
         if span == 0 {
             panic!("src_objects are empty!");
         } else if span == 1 {
-            left = obj[start].clone();
-            right = obj[start].clone();
+            let obj0 = obj.pop().unwrap();
+            left = obj0;
+            right = left.clone();
         } else if span == 2 {
-            match compare(&obj[start], &obj[start + 1]) {
+            let obj0 = obj.pop().unwrap();
+            let obj1 = obj.pop().unwrap();
+            match compare(&obj0, &obj1) {
                 Ordering::Less => {
-                    left = obj[start].clone();
-                    right = obj[start + 1].clone();
+                    left = obj0;
+                    right = obj1;
                 }
                 _ => {
-                    left = obj[start + 1].clone();
-                    right = obj[start].clone();
+                    left = obj1;
+                    right = obj0;
                 }
             }
         } else {

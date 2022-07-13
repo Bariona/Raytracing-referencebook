@@ -2,7 +2,7 @@
 use ndarray::Array3;
 use rand::{thread_rng, Rng};
 
-use crate::Hit::{random_double, Color, Point3};
+use crate::Hit::{Color, Point3};
 
 use super::Texture;
 
@@ -13,15 +13,14 @@ pub struct Perlin {
     pub perm_x: Vec<usize>,
     pub perm_y: Vec<usize>,
     pub perm_z: Vec<usize>,
-    pub ranfloat: Vec<f64>,
-    pub scale: f64,
+    pub ranvec: Vec<Point3>,
 }
 
 impl Perlin {
-    pub fn new(scale: f64) -> Self {
-        let mut ranfloat = vec![0.; POINT_COUNT];
-        for item in ranfloat.iter_mut().take(POINT_COUNT) {
-            *item = random_double();
+    pub fn new() -> Self {
+        let mut ranvec = vec![Point3::default(); POINT_COUNT];
+        for item in ranvec.iter_mut().take(POINT_COUNT) {
+            *item = Point3::random_range(-1., 1.);
         }
 
         let perm_x = Perlin::perlin_generate_perm();
@@ -32,12 +31,11 @@ impl Perlin {
             perm_x,
             perm_y,
             perm_z,
-            ranfloat,
-            scale,
+            ranvec,
         }
     }
 
-    fn trilinear_inerp(a3: Array3<f64>, u: f64, v: f64, w: f64) -> f64 {
+    fn trilinear_inerp(a3: Array3<Point3>, u: f64, v: f64, w: f64) -> f64 {
         let mut accum = 0.;
 
         for i in 0..2 {
@@ -46,17 +44,31 @@ impl Perlin {
                     accum += (i as f64 * u + (1 - i) as f64 * (1. - u))
                         * (j as f64 * v + (1 - j) as f64 * (1. - v))
                         * (k as f64 * w + (1 - k) as f64 * (1. - w))
-                        * a3[[i, j, k]];
+                        * Point3::dot(&a3[[i, j, k]], &Point3::new(u - i as f64, v - j as f64, w - k as f64));
                 }
             }
         }
         accum
     }
 
+    pub fn turb(&self, p: &Point3, depth: isize) -> f64 {
+        let mut accum = 0.;
+        let mut temp = p.clone();
+        let mut weigth = 1.;
+
+        for _i in 0..depth {
+            accum += weigth * Self::noise(&self, &temp);
+            weigth *= 0.5;
+            temp *= 2.;
+        }
+
+        accum.abs()
+    }
+
     pub fn noise(&self, p: &Point3) -> f64 {
-        let mut u = (p.x() - p.x().floor()).abs();
-        let mut v = (p.y() - p.y().floor()).abs();
-        let mut w = (p.z() - p.z().floor()).abs();
+        let mut u = p.x() - p.x().floor();
+        let mut v = p.y() - p.y().floor();
+        let mut w = p.z() - p.z().floor();
 
         u = u.powi(2) * (3. - 2. * u);
         v = v.powi(2) * (3. - 2. * v);
@@ -66,12 +78,12 @@ impl Perlin {
         let j = p.y().floor() as isize;
         let k = p.z().floor() as isize;
 
-        let mut a3 = Array3::<f64>::zeros((2, 2, 2));
+        let mut a3 = Array3::<Point3>::default((2, 2, 2));
 
         for di in 0..2 {
             for dj in 0..2 {
                 for dk in 0..2 {
-                    a3[[di, dj, dk]] = self.ranfloat[self.perm_x
+                    a3[[di, dj, dk]] = self.ranvec[self.perm_x
                         [((i + di as isize) & 255) as usize]
                         ^ self.perm_y[((j + dj as isize) & 255) as usize]
                         ^ self.perm_z[((k + dk as isize) & 255) as usize]];
@@ -100,8 +112,22 @@ impl Perlin {
     }
 }
 
-impl Texture for Perlin {
-    fn value(&self, _u: f64, _v: f64, p: &Point3) -> Option<crate::Hit::Color> {
-        Some(Color::new(1., 1., 1.) * self.noise(&(self.scale * (*p))))
+pub struct NoiseTexture {
+    noise: Perlin,
+    scale: f64,
+}
+
+impl NoiseTexture {
+    pub fn new(scale: f64) -> Self {
+        Self {
+            noise: Perlin::new(),
+            scale,
+        }
+    }
+}
+
+impl Texture for NoiseTexture {
+    fn value(&self, _u: f64, _v: f64, p: &Point3) -> Option<Color> {
+        Some(Color::new(1., 1., 1.) * self.noise.turb(&(self.scale * (*p)), 7))
     }
 }
