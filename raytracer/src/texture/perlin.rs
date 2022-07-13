@@ -44,7 +44,10 @@ impl Perlin {
                     accum += (i as f64 * u + (1 - i) as f64 * (1. - u))
                         * (j as f64 * v + (1 - j) as f64 * (1. - v))
                         * (k as f64 * w + (1 - k) as f64 * (1. - w))
-                        * Point3::dot(&a3[[i, j, k]], &Point3::new(u - i as f64, v - j as f64, w - k as f64));
+                        * Point3::dot(
+                            &a3[[i, j, k]],
+                            &Point3::new(u - i as f64, v - j as f64, w - k as f64),
+                        );
                 }
             }
         }
@@ -53,7 +56,7 @@ impl Perlin {
 
     pub fn turb(&self, p: &Point3, depth: isize) -> f64 {
         let mut accum = 0.;
-        let mut temp = p.clone();
+        let mut temp = *p;
         let mut weigth = 1.;
 
         for _i in 0..depth {
@@ -83,8 +86,7 @@ impl Perlin {
         for di in 0..2 {
             for dj in 0..2 {
                 for dk in 0..2 {
-                    a3[[di, dj, dk]] = self.ranvec[self.perm_x
-                        [((i + di as isize) & 255) as usize]
+                    a3[[di, dj, dk]] = self.ranvec[self.perm_x[((i + di as isize) & 255) as usize]
                         ^ self.perm_y[((j + dj as isize) & 255) as usize]
                         ^ self.perm_z[((k + dk as isize) & 255) as usize]];
                 }
