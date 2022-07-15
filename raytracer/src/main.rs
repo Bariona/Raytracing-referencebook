@@ -27,41 +27,62 @@ use Hit::{Hittable, HittableList};
 pub const PI: f64 = std::f64::consts::PI;
 pub const INF: f64 = f64::INFINITY;
 
-fn ray_color(r: Ray, world: &HittableList, depth: i32) -> Color {
+fn ray_color(r: Ray, background: Color, world: &HittableList, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new(0., 0., 0.);
     }
 
     if let Some(rec) = world.hit(&r, 0.001, INF) {
+        let emitted = rec.mat.emitted(rec.u, rec.v, &rec.p).unwrap();
         if let Some(ScatterRecord) = (rec.mat).scatter(&r, &rec) {
-            return ScatterRecord.attenuation
-                * ray_color(ScatterRecord.scattered, world, depth - 1);
+            emitted
+                + ScatterRecord.attenuation
+                    * ray_color(ScatterRecord.scattered, background, world, depth - 1)
+        } else {
+            emitted
         }
-        return Color::new(0., 0., 0.);
+    } else {
+        background
     }
 
-    let unit_direction = r.direction().unit_vector();
-    let t: f64 = 0.5 * (unit_direction.y() + 1.);
-    (1.0 - t) * Color::new(1., 1., 1.) + t * Color::new(0.5, 0.7, 1.)
+    // let unit_direction = r.direction().unit_vector();
+    // let t: f64 = 0.5 * (unit_direction.y() + 1.);
+    // (1.0 - t) * Color::new(1., 1., 1.) + t * Color::new(0.5, 0.7, 1.)
 }
 
 fn main() {
+    // let mut img = image::open("raytracer/earthmap.jpg").unwrap();
+    // let size = img.dimensions();
+    // println!("P3\n{} {}\n255", size.0, size.1);
+    // for j in (0..size.1) {
+    //     for i in 0..size.0 {
+    //         let pixel = img.get_pixel(i, j);
+    //         let rgb = pixel.to_rgb();
+    //         println!("{} {} {}", rgb[0], rgb[1], rgb[2]);
+    //     }
+    // }
+    // exit(0);
+
     const THREAD_NUMBER: usize = 3;
 
     // Image
-    const RATIO: f64 = 16. / 9.;
-    const IMAGE_WIDTH: usize = 400;
+    const RATIO: f64 = 1.;
+    const IMAGE_WIDTH: usize = 600;
     const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / RATIO) as usize;
-    const SAMPLES_PER_PIXEL: usize = 100;
+    const SAMPLES_PER_PIXEL: usize = 200;
     const MAX_DEPTH: i32 = 50;
 
     let quality = 100;
     let path = "output/output.jpg";
 
     // World
-    let switch = 1;
+    let switch = 4;
     let world;
     let mut aperture = 0.;
+    let mut background = Color::new(0.7, 0.8, 1.);
+    let mut lf = Point3::new(13., 2., 3.); // look_from
+    let mut la = Point3::new(0., 0., 0.); // look_at
+    let mut vfov = 20.;
 
     match switch {
         0 => {
@@ -70,6 +91,22 @@ fn main() {
         1 => {
             world = HittableList::two_perlin_sphere();
         }
+        2 => {
+            world = HittableList::load_image();
+        }
+        3 => {
+            world = HittableList::simple_light();
+            background = Color::new(0., 0., 0.);
+            lf = Point3::new(26., 3., 6.);
+            la = Point3::new(0., 2., 0.);
+        }
+        4 => {
+            world = HittableList::cornell_box();
+            background = Color::new(0., 0., 0.);
+            lf = Point3::new(278., 278., -800.);
+            la = Point3::new(278., 278., 0.);
+            vfov = 40.;
+        }
         _ => {
             world = HittableList::random_scene();
             aperture = 0.1;
@@ -77,13 +114,12 @@ fn main() {
     }
 
     // Camera
-    let lf = Point3::new(13., 2., 3.); // look_from
-    let la = Point3::new(0., 0., 0.); // look_at
+
     let cam = Camera::new(
         lf,
         la,
         Vec3::new(0., 1., 0.),
-        20.,
+        vfov,
         RATIO,
         aperture,
         10.,
@@ -149,7 +185,7 @@ fn main() {
                             let u = (i as f64 + random_double()) / (IMAGE_WIDTH as f64 - 1.);
                             let v = (j as f64 + random_double()) / (IMAGE_HEIGHT as f64 - 1.);
                             let r = cam.get_ray(u, v);
-                            pixel_color += ray_color(r, &clone_world, MAX_DEPTH);
+                            pixel_color += ray_color(r, background, &clone_world, MAX_DEPTH);
                         }
                         section_pixel_color.push(pixel_color);
                         progress += 1;

@@ -3,8 +3,12 @@ use std::sync::Arc;
 use crate::{
     basic::{self, random_range},
     bvh::aabb::{surrounding_box, AABB},
+    material::{
+        diffuse::DiffuseLight,
+        rectangle::{Rectanglexy, Rectanglexz, Rectangleyz},
+    },
     obj::move_sphere::MoveSphere,
-    texture::{checker::Checker, perlin::NoiseTexture},
+    texture::{checker::Checker, image_texture::ImageTexture, perlin::NoiseTexture},
 };
 pub use crate::{
     basic::{
@@ -92,6 +96,73 @@ impl Hittable for HittableList {
 }
 
 impl HittableList {
+    pub fn cornell_box() -> Self {
+        let mut world = HittableList::default();
+        let red = Arc::new(Lambertian::new(Color::new(0.65, 0.05, 0.05)));
+        let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
+        let green = Arc::new(Lambertian::new(Color::new(0.12, 0.45, 0.15)));
+        let light = Arc::new(DiffuseLight::new(Color::new(15., 15., 15.)));
+
+        world
+            .objects
+            .push(Arc::new(Rectangleyz::new(0., 555., 0., 555., 555., green)));
+        world
+            .objects
+            .push(Arc::new(Rectangleyz::new(0., 555., 0., 555., 0., red)));
+        world.objects.push(Arc::new(Rectanglexz::new(
+            213., 343., 227., 332., 554., light,
+        )));
+        world.objects.push(Arc::new(Rectanglexz::new(
+            0.,
+            555.,
+            0.,
+            555.,
+            0.,
+            white.clone(),
+        )));
+        world.objects.push(Arc::new(Rectanglexz::new(
+            0.,
+            555.,
+            0.,
+            555.,
+            555.,
+            white.clone(),
+        )));
+        world
+            .objects
+            .push(Arc::new(Rectanglexy::new(0., 555., 0., 555., 555., white)));
+        world
+    }
+    pub fn simple_light() -> Self {
+        let mut world = HittableList::default();
+        let pertext = Arc::new(NoiseTexture::new(4.));
+        world.objects.push(Arc::new(Sphere {
+            center: Point3::new(0., -1000., 0.),
+            radius: 1000.,
+            mat: Arc::new(Lambertian::new_texture(pertext.clone())),
+        }));
+        world.objects.push(Arc::new(Sphere {
+            center: Point3::new(0., 2., 0.),
+            radius: 2.,
+            mat: Arc::new(Lambertian::new_texture(pertext)),
+        }));
+
+        let difflight = Arc::new(DiffuseLight::new(Color::new(4., 4., 4.)));
+        world
+            .objects
+            .push(Arc::new(Rectanglexy::new(3., 5., 1., 3., -2., difflight)));
+        world
+    }
+    pub fn load_image() -> Self {
+        let mut world = HittableList::default();
+        let texture = Arc::new(ImageTexture::new("raytracer/earthmap.jpg"));
+        world.objects.push(Arc::new(Sphere {
+            center: Point3::new(0., 0., 0.),
+            radius: 2.,
+            mat: Arc::new(Lambertian::new_texture(texture)),
+        }));
+        world
+    }
     pub fn two_perlin_sphere() -> Self {
         let mut world = HittableList::default();
 
