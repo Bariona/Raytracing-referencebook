@@ -1,5 +1,6 @@
 pub mod dielectric;
 pub mod diffuse;
+pub mod isotropic;
 pub mod lambertian;
 pub mod matel;
 pub mod rectangle;

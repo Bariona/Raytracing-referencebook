@@ -1,4 +1,4 @@
-use std::ops::{Add, Div, Index, Mul, Sub};
+use std::ops::{Add, Div, Index, IndexMut, Mul, Sub};
 use std::ops::{AddAssign, DivAssign, MulAssign, Neg};
 
 use super::{random_double, random_range};
@@ -109,7 +109,17 @@ impl Index<u32> for Vec3 {
             0 => &self.x,
             1 => &self.y,
             2 => &self.z,
-            _ => &0.,
+            _ => panic!(),
+        }
+    }
+}
+impl IndexMut<u32> for Vec3 {
+    fn index_mut(&mut self, idx: u32) -> &mut Self::Output {
+        match idx {
+            0 => &mut self.x,
+            1 => &mut self.y,
+            2 => &mut self.z,
+            _ => panic!(),
         }
     }
 }

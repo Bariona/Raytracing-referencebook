@@ -7,7 +7,10 @@ use crate::{
         diffuse::DiffuseLight,
         rectangle::{Rectanglexy, Rectanglexz, Rectangleyz},
     },
-    obj::move_sphere::MoveSphere,
+    obj::{
+        cube::Cube, medium::ConstantMedium, move_sphere::MoveSphere, rotate::Rotatey,
+        translate::Translate,
+    },
     texture::{checker::Checker, image_texture::ImageTexture, perlin::NoiseTexture},
 };
 pub use crate::{
@@ -96,12 +99,12 @@ impl Hittable for HittableList {
 }
 
 impl HittableList {
-    pub fn cornell_box() -> Self {
+    pub fn cornell_box_smoke() -> Self {
         let mut world = HittableList::default();
         let red = Arc::new(Lambertian::new(Color::new(0.65, 0.05, 0.05)));
         let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
         let green = Arc::new(Lambertian::new(Color::new(0.12, 0.45, 0.15)));
-        let light = Arc::new(DiffuseLight::new(Color::new(15., 15., 15.)));
+        let light = Arc::new(DiffuseLight::new(Color::new(7., 7., 7.)));
 
         world
             .objects
@@ -110,7 +113,7 @@ impl HittableList {
             .objects
             .push(Arc::new(Rectangleyz::new(0., 555., 0., 555., 0., red)));
         world.objects.push(Arc::new(Rectanglexz::new(
-            213., 343., 227., 332., 554., light,
+            113., 443., 127., 432., 554., light,
         )));
         world.objects.push(Arc::new(Rectanglexz::new(
             0.,
@@ -128,9 +131,44 @@ impl HittableList {
             555.,
             white.clone(),
         )));
-        world
-            .objects
-            .push(Arc::new(Rectanglexy::new(0., 555., 0., 555., 555., white)));
+        world.objects.push(Arc::new(Rectanglexy::new(
+            0.,
+            555.,
+            0.,
+            555.,
+            555.,
+            white.clone(),
+        )));
+
+        let box1 = Arc::new(Cube::new(
+            Point3::new(0., 0., 0.),
+            Point3::new(165., 330., 165.),
+            white.clone(),
+        ));
+        let box1 = Arc::new(Rotatey::new(box1, 15.));
+        let box1 = Arc::new(Translate::new(box1, Vec3::new(265., 0., 295.)));
+
+        let box2 = Arc::new(Cube::new(
+            Point3::new(0., 0., 0.),
+            Point3::new(165., 165., 165.),
+            white,
+        ));
+        let box2 = Arc::new(Rotatey::new(box2, -18.));
+        let box2 = Arc::new(Translate::new(box2, Vec3::new(130., 0., 65.)));
+
+        world.objects.push(Arc::new(ConstantMedium::new(
+            box1,
+            0.01,
+            Color::new(0., 0., 0.),
+        )));
+
+        world.objects.push(Arc::new(ConstantMedium::new(
+            box2,
+            0.01,
+            Color::new(1., 1., 1.),
+        )));
+        // world.objects.push(Arc::new(Cube::new(Point3::new(130., 0., 65.), Point3::new(295., 165., 230.), white.clone())));
+        // world.objects.push(Arc::new(Cube::new(Point3::new(265., 0., 295.), Point3::new(430., 330., 460.), white.clone())));
         world
     }
     pub fn simple_light() -> Self {

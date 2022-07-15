@@ -33,36 +33,22 @@ fn ray_color(r: Ray, background: Color, world: &HittableList, depth: i32) -> Col
     }
 
     if let Some(rec) = world.hit(&r, 0.001, INF) {
-        let emitted = rec.mat.emitted(rec.u, rec.v, &rec.p).unwrap();
+        let emitted = rec.mat.emitted(rec.u, rec.v, &rec.p).unwrap(); // 击中物体本身发光程度
         if let Some(ScatterRecord) = (rec.mat).scatter(&r, &rec) {
+            //若集中物体后还可以反射,光=物体本身发光+原先光强*attenuation
             emitted
                 + ScatterRecord.attenuation
                     * ray_color(ScatterRecord.scattered, background, world, depth - 1)
         } else {
+            // 若物体本身不反射光(本身就是光源), 则光=物体本身发光
             emitted
         }
     } else {
         background
     }
-
-    // let unit_direction = r.direction().unit_vector();
-    // let t: f64 = 0.5 * (unit_direction.y() + 1.);
-    // (1.0 - t) * Color::new(1., 1., 1.) + t * Color::new(0.5, 0.7, 1.)
 }
 
 fn main() {
-    // let mut img = image::open("raytracer/earthmap.jpg").unwrap();
-    // let size = img.dimensions();
-    // println!("P3\n{} {}\n255", size.0, size.1);
-    // for j in (0..size.1) {
-    //     for i in 0..size.0 {
-    //         let pixel = img.get_pixel(i, j);
-    //         let rgb = pixel.to_rgb();
-    //         println!("{} {} {}", rgb[0], rgb[1], rgb[2]);
-    //     }
-    // }
-    // exit(0);
-
     const THREAD_NUMBER: usize = 3;
 
     // Image
@@ -101,7 +87,7 @@ fn main() {
             la = Point3::new(0., 2., 0.);
         }
         4 => {
-            world = HittableList::cornell_box();
+            world = HittableList::cornell_box_smoke();
             background = Color::new(0., 0., 0.);
             lf = Point3::new(278., 278., -800.);
             la = Point3::new(278., 278., 0.);
