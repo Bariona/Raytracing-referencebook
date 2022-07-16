@@ -14,6 +14,9 @@ pub struct Sphere {
 }
 
 impl Sphere {
+    pub fn new(center: Point3, radius: f64, mat: Arc<dyn Material>) -> Self {
+        Self { center, radius, mat }
+    }
     pub fn get_sphere_uv(p: &Point3) -> Option<[f64; 2]> {
         // p: a given point on the sphere of radius one, centered at the origin.
         // u: returned value [0,1] of angle around the Y axis from X=-1.

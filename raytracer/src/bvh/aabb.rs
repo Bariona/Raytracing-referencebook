@@ -1,6 +1,6 @@
 use crate::Hit::{Point3, Ray};
 
-#[derive(Default, Copy, Clone)]
+#[derive(Default, Copy, Clone, Debug)]
 pub struct AABB {
     pub mini: Point3,
     pub maxi: Point3,

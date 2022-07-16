@@ -1,9 +1,9 @@
 use core::panic;
-use std::{cmp::Ordering, sync::Arc};
+use std::{cmp::Ordering, sync::Arc, process::exit};
 
 use rand::{thread_rng, Rng};
 
-use crate::Hit::Hittable;
+use crate::Hit::{Hittable, HittableList};
 
 use super::aabb::{surrounding_box, AABB};
 
@@ -14,7 +14,12 @@ pub struct BvhNode {
 }
 
 impl BvhNode {
-    pub fn new(left: Arc<dyn Hittable>, right: Arc<dyn Hittable>, box_aabb: AABB) -> Self {
+
+    pub fn new(list: HittableList, time0: f64, time1: f64) -> Self {
+        println!("length = {}", list.objects.len());
+        Self::new_from_vec(list.objects, time0, time1)
+    }
+    pub fn new_node(left: Arc<dyn Hittable>, right: Arc<dyn Hittable>, box_aabb: AABB) -> Self {
         Self {
             left,
             right,
@@ -26,13 +31,11 @@ impl BvhNode {
     // to-do: remove "start", "end"
     pub fn new_from_vec(
         mut obj: Vec<Arc<dyn Hittable>>,
-        start: usize,
-        end: usize,
         time0: f64,
         time1: f64,
     ) -> Self {
         let axis = thread_rng().gen_range(0..=2);
-        let span = end - start;
+        let span = obj.len();
 
         let left;
         let right;
@@ -44,6 +47,12 @@ impl BvhNode {
             )
             .unwrap()
         };
+
+        // println!("{}", span);
+        // for item in obj {
+        //     print!("{} ", item);
+        // }
+        // println!("");
 
         if span == 0 {
             panic!("src_objects are empty!");
@@ -67,19 +76,35 @@ impl BvhNode {
         } else {
             obj.sort_unstable_by(compare);
 
-            let mid = start + span / 2;
             let mut obj_left = obj;
             let obj_rigt = obj_left.split_off(span / 2);
 
-            left = Arc::new(Self::new_from_vec(obj_left, start, mid, time0, time1));
-            right = Arc::new(Self::new_from_vec(obj_rigt, mid, end, time0, time1));
+            // let mut flag = 0;
+            // if span > 390 {
+            //     println!("@");
+            //     flag = 1;
+            // }
+            // println!("{}", flag);
+            left = Arc::new(BvhNode::new_from_vec(obj_left, time0, time1));
+            right = Arc::new(BvhNode::new_from_vec(obj_rigt, time0, time1));
+            // if flag == 1 || span > 390 {
+            //     println!("%");
+            // }
+        }
+        if span > 390 {
+            println!("@");
         }
         let box_left = left.bounding_box(time0, time1).unwrap();
         let box_right = right.bounding_box(time0, time1).unwrap();
 
         let box_cur = surrounding_box(box_left, box_right);
 
-        Self::new(left, right, box_cur)
+        // if span > 390 {
+        //     println!("{} {:?}", span, box_cur);
+        //     exit(0);
+        // }
+        
+        Self::new_node(left, right, box_cur)
     }
 }
 
@@ -88,9 +113,15 @@ impl Hittable for BvhNode {
         Some(self.box_aabb)
     }
     fn hit(&self, r: &crate::Hit::Ray, t_min: f64, t_max: f64) -> Option<crate::Hit::HitRecord> {
+
+        if self.box_aabb.hit(r, t_min, t_max) {
+            println!("{}", self.box_aabb.hit(r, t_min, t_max));
+            println!("{:?}\n{:?}", r, self.box_aabb);
+            exit(0);
+        }
         if !self.box_aabb.hit(r, t_min, t_max) {
             return None;
-        }
+        } 
 
         let hit_left = self.left.hit(r, t_min, t_max);
         let hit_right = self.right.hit(

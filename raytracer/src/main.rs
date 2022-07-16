@@ -53,7 +53,7 @@ fn main() {
 
     // Image
     const RATIO: f64 = 1.;
-    const IMAGE_WIDTH: usize = 600;
+    const IMAGE_WIDTH: usize = 200;
     const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / RATIO) as usize;
     const SAMPLES_PER_PIXEL: usize = 200;
     const MAX_DEPTH: i32 = 50;
@@ -62,7 +62,7 @@ fn main() {
     let path = "output/output.jpg";
 
     // World
-    let switch = 4;
+    let switch = 5;
     let world;
     let mut aperture = 0.;
     let mut background = Color::new(0.7, 0.8, 1.);
@@ -90,6 +90,13 @@ fn main() {
             world = HittableList::cornell_box_smoke();
             background = Color::new(0., 0., 0.);
             lf = Point3::new(278., 278., -800.);
+            la = Point3::new(278., 278., 0.);
+            vfov = 40.;
+        }
+        5 => {
+            world = HittableList::final_scene();
+            background = Color::new(0., 0., 0.);
+            lf = Point3::new(478., 278., -600.);
             la = Point3::new(278., 278., 0.);
             vfov = 40.;
         }
