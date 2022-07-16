@@ -21,8 +21,22 @@ pub struct MoveSphere {
 }
 
 impl MoveSphere {
-    pub fn new(center0: Point3, center1: Point3, time0: f64, time1: f64, radius: f64, mat: Arc<dyn Material>) -> Self {
-        Self { center0, center1, radius, time0, time1, mat }
+    pub fn new(
+        center0: Point3,
+        center1: Point3,
+        time0: f64,
+        time1: f64,
+        radius: f64,
+        mat: Arc<dyn Material>,
+    ) -> Self {
+        Self {
+            center0,
+            center1,
+            radius,
+            time0,
+            time1,
+            mat,
+        }
     }
     pub fn center(&self, time: f64) -> Point3 {
         self.center0

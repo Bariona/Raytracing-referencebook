@@ -1,5 +1,5 @@
 use core::panic;
-use std::{cmp::Ordering, sync::Arc, process::exit};
+use std::{cmp::Ordering, sync::Arc};
 
 use rand::{thread_rng, Rng};
 
@@ -14,9 +14,8 @@ pub struct BvhNode {
 }
 
 impl BvhNode {
-
     pub fn new(list: HittableList, time0: f64, time1: f64) -> Self {
-        println!("length = {}", list.objects.len());
+        // println!("length = {}", list.objects.len());
         Self::new_from_vec(list.objects, time0, time1)
     }
     pub fn new_node(left: Arc<dyn Hittable>, right: Arc<dyn Hittable>, box_aabb: AABB) -> Self {
@@ -29,11 +28,7 @@ impl BvhNode {
 
     // obj: has moved its ownership !!!
     // to-do: remove "start", "end"
-    pub fn new_from_vec(
-        mut obj: Vec<Arc<dyn Hittable>>,
-        time0: f64,
-        time1: f64,
-    ) -> Self {
+    pub fn new_from_vec(mut obj: Vec<Arc<dyn Hittable>>, time0: f64, time1: f64) -> Self {
         let axis = thread_rng().gen_range(0..=2);
         let span = obj.len();
 
@@ -91,9 +86,6 @@ impl BvhNode {
             //     println!("%");
             // }
         }
-        if span > 390 {
-            println!("@");
-        }
         let box_left = left.bounding_box(time0, time1).unwrap();
         let box_right = right.bounding_box(time0, time1).unwrap();
 
@@ -103,7 +95,7 @@ impl BvhNode {
         //     println!("{} {:?}", span, box_cur);
         //     exit(0);
         // }
-        
+
         Self::new_node(left, right, box_cur)
     }
 }
@@ -113,15 +105,14 @@ impl Hittable for BvhNode {
         Some(self.box_aabb)
     }
     fn hit(&self, r: &crate::Hit::Ray, t_min: f64, t_max: f64) -> Option<crate::Hit::HitRecord> {
-
-        if self.box_aabb.hit(r, t_min, t_max) {
-            println!("{}", self.box_aabb.hit(r, t_min, t_max));
-            println!("{:?}\n{:?}", r, self.box_aabb);
-            exit(0);
-        }
+        // if !self.box_aabb.hit(r, t_min, t_max) {
+        //     println!("{}", self.box_aabb.hit(r, t_min, t_max));
+        //     println!("{:?}\n{:?}", r, self.box_aabb);
+        //     exit(0);
+        // }
         if !self.box_aabb.hit(r, t_min, t_max) {
             return None;
-        } 
+        }
 
         let hit_left = self.left.hit(r, t_min, t_max);
         let hit_right = self.right.hit(

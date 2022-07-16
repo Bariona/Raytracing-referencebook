@@ -4,7 +4,7 @@ use super::VEC3::{Point3, Vec3};
 pub struct Ray {
     pub orig: Point3,
     pub dir: Vec3,
-    pub tm: f64,
+    pub tm: f64, // Ray 产生的时间
 }
 
 impl Ray {

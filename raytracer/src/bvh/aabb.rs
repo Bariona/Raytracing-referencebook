@@ -17,7 +17,7 @@ impl AABB {
         for a in 0..3 {
             let invD = 1.0 / r.direction()[a];
             let mut t0 = invD * (self.mini[a] - r.origin()[a]);
-            let mut t1 = invD * (self.mini[a] - r.origin()[a]);
+            let mut t1 = invD * (self.maxi[a] - r.origin()[a]);
 
             if invD < 0. {
                 std::mem::swap(&mut t0, &mut t1);

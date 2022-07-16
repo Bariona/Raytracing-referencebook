@@ -2,7 +2,10 @@ use std::sync::Arc;
 
 use crate::{
     basic::{self, random_range},
-    bvh::{aabb::{surrounding_box, AABB}, bvh_node::BvhNode},
+    bvh::{
+        aabb::{surrounding_box, AABB},
+        bvh_node::BvhNode,
+    },
     material::{
         diffuse::DiffuseLight,
         rectangle::{Rectanglexy, Rectanglexz, Rectangleyz},
@@ -118,20 +121,21 @@ impl HittableList {
                 let z1 = z0 + w;
 
                 boxes1.objects.push(Arc::new(Cube::new(
-                    Point3::new(x0, y0, z0), 
-                    Point3::new(x1, y1, z1), 
-                    ground.clone()
+                    Point3::new(x0, y0, z0),
+                    Point3::new(x1, y1, z1),
+                    ground.clone(),
                 )));
             }
         }
-        
 
         world.objects.push(Arc::new(BvhNode::new(boxes1, 0., 1.)));
 
         let light = Arc::new(DiffuseLight::new(Color::new(7., 7., 7.)));
-        world.objects.push(Arc::new(Rectanglexz::new(123., 423., 147., 412., 554., light)));
-        
-        return world;
+        world.objects.push(Arc::new(Rectanglexz::new(
+            123., 423., 147., 412., 554., light,
+        )));
+
+        // return world;
 
         let center1 = Point3::new(400., 400., 200.);
         let center2 = center1 + Vec3::new(30., 0., 0.);
@@ -143,13 +147,13 @@ impl HittableList {
             0.,
             1.,
             50.,
-            moving_sphere_material
+            moving_sphere_material,
         )));
 
         world.objects.push(Arc::new(Sphere::new(
-            Point3::new(260., 150., 45.), 
-            50., 
-            Arc::new(Dielectric::new(1.5))
+            Point3::new(260., 150., 45.),
+            50.,
+            Arc::new(Dielectric::new(1.5)),
         )));
 
         world.objects.push(Arc::new(Sphere::new(
@@ -159,10 +163,10 @@ impl HittableList {
         )));
 
         let boundary = Arc::new(Sphere::new(
-            Point3::new(360., 150., 145.), 
-            70., 
-            Arc::new(Dielectric::new(1.5)
-        )));
+            Point3::new(360., 150., 145.),
+            70.,
+            Arc::new(Dielectric::new(1.5)),
+        ));
 
         world.objects.push(boundary.clone());
         world.objects.push(Arc::new(ConstantMedium::new(
@@ -172,10 +176,10 @@ impl HittableList {
         )));
 
         let boundary = Arc::new(Sphere::new(
-            Point3::new(0., 0., 0.), 
-            5000., 
-            Arc::new(Dielectric::new(1.5)
-        )));
+            Point3::new(0., 0., 0.),
+            5000.,
+            Arc::new(Dielectric::new(1.5)),
+        ));
         world.objects.push(Arc::new(ConstantMedium::new(
             boundary,
             0.0001,
@@ -201,19 +205,15 @@ impl HittableList {
         let ns = 1000;
         for _j in 0..ns {
             box2.objects.push(Arc::new(Sphere::new(
-                Point3::random_range(0., 165.), 
-                10., 
+                Point3::random_range(0., 165.),
+                10.,
                 white.clone(),
             )));
         }
 
         world.objects.push(Arc::new(Translate::new(
-            Arc::new(
-                Rotatey::new( 
-                    Arc::new(BvhNode::new(box2, 0., 1.)), 
-                    15.
-                )),
-            Vec3::new(-100., 270., 395.),   
+            Arc::new(Rotatey::new(Arc::new(BvhNode::new(box2, 0., 1.)), 15.)),
+            Vec3::new(-100., 270., 395.),
         )));
 
         world
