@@ -23,8 +23,8 @@ impl AABB {
                 std::mem::swap(&mut t0, &mut t1);
             }
 
-            tmin = if t0 > tmin { t0 } else { tmin };
-            tmax = if t1 < tmax { t1 } else { tmax };
+            tmin = tmin.max(t0);
+            tmax = tmax.min(t1);
 
             if tmax <= tmin {
                 return false;

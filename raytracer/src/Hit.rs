@@ -80,7 +80,7 @@ impl Hittable for HittableList {
             return None;
         }
 
-        let first_box = true;
+        let mut first_box = true;
         let mut tmp_box = AABB::default();
 
         for obj in &self.objects {
@@ -88,6 +88,7 @@ impl Hittable for HittableList {
                 Some(tmp_AABB) => {
                     if first_box {
                         tmp_box = tmp_AABB;
+                        first_box = false;
                     } else {
                         tmp_box = surrounding_box(tmp_box, tmp_AABB);
                     }

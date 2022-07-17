@@ -124,9 +124,10 @@ impl Hittable for BvhNode {
             },
         );
 
-        match hit_left {
-            None => hit_right,
-            Some(_) => hit_left,
+        // 注意这里应该能return就先return hit_right 而不是hit_left
+        match hit_right {
+            None => hit_left,
+            Some(_) => hit_right,
         }
     }
 }
