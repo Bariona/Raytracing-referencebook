@@ -66,7 +66,7 @@ fn write_color(pixel_color: Color, samples_per_pixel: usize) -> [u8; 3] {
 }
 
 fn main() {
-    const THREAD_NUMBER: usize = 16;
+    const THREAD_NUMBER: usize = 32;
 
     // Image
     const RATIO: f64 = 1.;
