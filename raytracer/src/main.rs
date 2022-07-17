@@ -65,15 +65,14 @@ fn write_color(pixel_color: Color, samples_per_pixel: usize) -> [u8; 3] {
     ]
 }
 
-
 fn main() {
-    const THREAD_NUMBER: usize = 8;
+    const THREAD_NUMBER: usize = 16;
 
     // Image
     const RATIO: f64 = 1.;
     const IMAGE_WIDTH: usize = 800;
     const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / RATIO) as usize;
-    const SAMPLES_PER_PIXEL: usize = 10000;
+    const SAMPLES_PER_PIXEL: usize = 5000;
     const MAX_DEPTH: i32 = 50;
 
     let quality = 100;
@@ -281,7 +280,7 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
 /*
 Questions:
 1. 多个tx, rx? 为什么不一个呢: 方便
-2. Send类型可以在线程间安全传递其所有权??? 可是都已经move了呀: 但是可以通过channel之间传递
+2. Send类型可以在线程间安全传递其所有权, 那move了怎么办: 但是可以通过channel之间传递
 3. Sync + Send 的trait为什么是加在hittable trait后面? 是不是别的struct默认已经derive了Sync+Send: 正确的
     而且为什么一定要Sync + Send: 基本定义 (
 4. Camera: cam变量被调用为什么没有交出所有权: 因为Camera已经实现了copy, 没有实现copy的类型会直接转移所有权
