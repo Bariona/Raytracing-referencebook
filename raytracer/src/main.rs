@@ -47,9 +47,27 @@ fn ray_color(r: Ray, background: Color, world: &HittableList, depth: i32) -> Col
         background
     }
 }
+// 在每个像素点周围(小范围)内采样sample_per_pixel次, 暴力取平均值
+fn write_color(pixel_color: Color, samples_per_pixel: usize) -> [u8; 3] {
+    let mut r = pixel_color.x();
+    let mut g = pixel_color.y();
+    let mut b = pixel_color.z();
+
+    let scale = 1.0 / (samples_per_pixel as f64);
+    r = (r * scale).sqrt();
+    g = (g * scale).sqrt();
+    b = (b * scale).sqrt();
+
+    [
+        (256. * clamp(r, 0., 0.999)) as u8,
+        (256. * clamp(g, 0., 0.999)) as u8,
+        (256. * clamp(b, 0., 0.999)) as u8,
+    ]
+}
+
 
 fn main() {
-    const THREAD_NUMBER: usize = 4;
+    const THREAD_NUMBER: usize = 8;
 
     // Image
     const RATIO: f64 = 1.;
@@ -260,29 +278,11 @@ fn clamp(x: f64, min: f64, max: f64) -> f64 {
     }
 }
 
-// 在每个像素点周围(小范围)内采样sample_per_pixel次, 暴力取平均值
-fn write_color(pixel_color: Color, samples_per_pixel: usize) -> [u8; 3] {
-    let mut r = pixel_color.x();
-    let mut g = pixel_color.y();
-    let mut b = pixel_color.z();
-
-    let scale = 1.0 / (samples_per_pixel as f64);
-    r = (r * scale).sqrt();
-    g = (g * scale).sqrt();
-    b = (b * scale).sqrt();
-
-    [
-        (256. * clamp(r, 0., 0.999)) as u8,
-        (256. * clamp(g, 0., 0.999)) as u8,
-        (256. * clamp(b, 0., 0.999)) as u8,
-    ]
-}
-
 /*
 Questions:
-1. 多个tx, rx? 为什么不一个呢: 方便期间
+1. 多个tx, rx? 为什么不一个呢: 方便
 2. Send类型可以在线程间安全传递其所有权??? 可是都已经move了呀: 但是可以通过channel之间传递
 3. Sync + Send 的trait为什么是加在hittable trait后面? 是不是别的struct默认已经derive了Sync+Send: 正确的
     而且为什么一定要Sync + Send: 基本定义 (
-4. Cam(line 119)变量被调用为什么没有交出所有权: 因为Cam已经实现了copy, 没有实现copy的类型会直接转移所有权
+4. Camera: cam变量被调用为什么没有交出所有权: 因为Camera已经实现了copy, 没有实现copy的类型会直接转移所有权
 */
