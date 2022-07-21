@@ -13,7 +13,7 @@ use std::{
     fs::File,
     process::exit,
     sync::{mpsc, Arc},
-    thread,
+    thread, f64::INFINITY,
 };
 
 use basic::{
@@ -24,21 +24,18 @@ use basic::{
 };
 use Hit::{Hittable, HittableList};
 
-pub const PI: f64 = std::f64::consts::PI;
-pub const INF: f64 = f64::INFINITY;
-
 fn ray_color(r: Ray, background: Color, world: &HittableList, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new(0., 0., 0.);
     }
 
-    if let Some(rec) = world.hit(&r, 0.001, INF) {
+    if let Some(rec) = world.hit(&r, 0.001, INFINITY) {
         let emitted = rec.mat.emitted(rec.u, rec.v, &rec.p).unwrap(); // 击中物体本身发光程度
         if let Some(ScatterRecord) = (rec.mat).scatter(&r, &rec) {
             //若击中物体后还可以反射,光=物体本身发光+原先光强*attenuation
-            emitted
-                + ScatterRecord.attenuation
-                    * ray_color(ScatterRecord.scattered, background, world, depth - 1)
+            emitted 
+                + ScatterRecord.attenuation * (rec.mat).scatter_pdf(&r, &rec, &ScatterRecord.scattered).unwrap()
+                    * ray_color(ScatterRecord.scattered, background, world, depth - 1) / ScatterRecord.pdf
         } else {
             // 若物体本身不反射光(本身就是光源), 则光=物体本身发光
             emitted
@@ -66,20 +63,20 @@ fn write_color(pixel_color: Color, samples_per_pixel: usize) -> [u8; 3] {
 }
 
 fn main() {
-    const THREAD_NUMBER: usize = 32;
+    const THREAD_NUMBER: usize = 8;
 
     // Image
     const RATIO: f64 = 1.;
-    const IMAGE_WIDTH: usize = 800;
+    const IMAGE_WIDTH: usize = 600;
     const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / RATIO) as usize;
-    const SAMPLES_PER_PIXEL: usize = 5000;
+    const SAMPLES_PER_PIXEL: usize = 500;
     const MAX_DEPTH: i32 = 50;
 
     let quality = 100;
     let path = "output/output.jpg";
 
     // World
-    let switch = 5;
+    let switch = 6;
     let world;
     let mut aperture = 0.;
     let mut background = Color::new(0.7, 0.8, 1.);
@@ -114,6 +111,13 @@ fn main() {
             world = HittableList::final_scene();
             background = Color::new(0., 0., 0.);
             lf = Point3::new(478., 278., -600.);
+            la = Point3::new(278., 278., 0.);
+            vfov = 40.;
+        }
+        6 => {
+            world = HittableList::cornell_box();
+            background = Color::new(0., 0., 0.);
+            lf = Point3::new(278., 278., -800.);
             la = Point3::new(278., 278., 0.);
             vfov = 40.;
         }

@@ -44,6 +44,7 @@ impl Material for Dielectric {
         Some(ScatterRecord {
             attenuation,
             scattered,
+            pdf: 0.,
         })
     }
 }

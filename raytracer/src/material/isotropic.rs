@@ -26,6 +26,7 @@ impl Material for Isotropic {
         Some(ScatterRecord {
             attenuation,
             scattered,
+            pdf: 0.,
         })
     }
 }

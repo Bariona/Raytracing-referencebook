@@ -1,11 +1,10 @@
 #![allow(clippy::question_mark)]
-use std::sync::Arc;
+use std::{sync::Arc, f64::INFINITY};
 
 use crate::{
     material::isotropic::Isotropic,
     texture::Texture,
     Hit::{random_double, Color, HitRecord, Hittable, Material, Vec3},
-    INF,
 };
 
 pub struct ConstantMedium {
@@ -40,13 +39,13 @@ impl Hittable for ConstantMedium {
         let enableDebug = false;
         let debugging = enableDebug && random_double() < 0.00001;
 
-        let rec1 = self.boundary.hit(r, -INF, INF);
+        let rec1 = self.boundary.hit(r, -INFINITY, INFINITY);
         if rec1.is_none() {
             return None;
         }
         let mut rec1 = rec1.unwrap();
 
-        let rec2 = self.boundary.hit(r, rec1.t + 0.0001, INF);
+        let rec2 = self.boundary.hit(r, rec1.t + 0.0001, INFINITY);
         if rec2.is_none() {
             return None;
         }

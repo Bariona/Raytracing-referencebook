@@ -5,6 +5,7 @@ use crate::{
     Hit::{Hittable, Ray, Vec3},
 };
 
+// 物体空间平移 offset
 pub struct Translate {
     ptr: Arc<dyn Hittable>,
     offset: Vec3,

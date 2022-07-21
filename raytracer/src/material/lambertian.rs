@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, f64::consts::PI};
 
 use crate::texture::{solid_color::SolidColor, Texture};
 
@@ -27,13 +27,20 @@ impl Material for Lambertian {
             scatter_direction = rec.normal;
         }
 
-        let scattered = Ray::new(rec.p, scatter_direction, r_in.time());
+        let scattered = Ray::new(rec.p, scatter_direction.unit_vector(), r_in.time());
         let attenuation = (self.albedo).value(rec.u, rec.v, &rec.p).unwrap();
 
-        // println!("{:?}", attenuation);
         Some(ScatterRecord {
             attenuation,
             scattered,
+            pdf: Vec3::dot(&rec.normal, &scattered.direction()) / PI,
         })
+    }
+    fn scatter_pdf(&self, _r_in: &Ray, rec: &HitRecord, scattered: &Ray) -> Option<f64> {
+        let cosine = Vec3::dot(&rec.normal, &scattered.direction().unit_vector());
+        let consine = cosine.max(0.);
+
+        // println!("{}",cosine);
+        Some(consine / PI)
     }
 }

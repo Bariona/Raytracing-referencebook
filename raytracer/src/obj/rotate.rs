@@ -1,11 +1,10 @@
 #![allow(dead_code)]
-use std::sync::Arc;
+use std::{sync::Arc, f64::INFINITY};
 
 use crate::{
     basic::degree_to_radians,
     bvh::aabb::AABB,
     Hit::{Hittable, Point3, Ray, Vec3},
-    INF,
 };
 
 pub struct Rotatey {
@@ -25,8 +24,8 @@ impl Rotatey {
         let bbox = ptr.bounding_box(0., 1.).unwrap();
         let hasbox = true;
 
-        let mut mi = Point3::new(INF, INF, INF);
-        let mut mx = Point3::new(-INF, -INF, -INF);
+        let mut mi = Point3::new(INFINITY, INFINITY, INFINITY);
+        let mut mx = Point3::new(-INFINITY, -INFINITY, -INFINITY);
 
         for i in 0..2 {
             for j in 0..2 {

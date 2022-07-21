@@ -2,9 +2,10 @@ pub mod RAY;
 pub mod VEC3;
 pub mod camera;
 
+use std::f64::consts::PI;
+
 use rand::Rng;
 
-use crate::PI;
 
 pub fn degree_to_radians(degree: f64) -> f64 {
     degree * PI / 180.
