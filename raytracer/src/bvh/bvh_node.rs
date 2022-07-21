@@ -105,11 +105,6 @@ impl Hittable for BvhNode {
         Some(self.box_aabb)
     }
     fn hit(&self, r: &crate::Hit::Ray, t_min: f64, t_max: f64) -> Option<crate::Hit::HitRecord> {
-        // if !self.box_aabb.hit(r, t_min, t_max) {
-        //     println!("{}", self.box_aabb.hit(r, t_min, t_max));
-        //     println!("{:?}\n{:?}", r, self.box_aabb);
-        //     exit(0);
-        // }
         if !self.box_aabb.hit(r, t_min, t_max) {
             return None;
         }
@@ -126,8 +121,8 @@ impl Hittable for BvhNode {
 
         // 注意这里应该能return就先return hit_right 而不是hit_left
         match hit_right {
-            None => hit_left,
             Some(_) => hit_right,
+            None => hit_left,
         }
     }
 }

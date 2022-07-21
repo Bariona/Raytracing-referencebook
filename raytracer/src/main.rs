@@ -35,7 +35,7 @@ fn ray_color(r: Ray, background: Color, world: &HittableList, depth: i32) -> Col
     if let Some(rec) = world.hit(&r, 0.001, INF) {
         let emitted = rec.mat.emitted(rec.u, rec.v, &rec.p).unwrap(); // 击中物体本身发光程度
         if let Some(ScatterRecord) = (rec.mat).scatter(&r, &rec) {
-            //若集中物体后还可以反射,光=物体本身发光+原先光强*attenuation
+            //若击中物体后还可以反射,光=物体本身发光+原先光强*attenuation
             emitted
                 + ScatterRecord.attenuation
                     * ray_color(ScatterRecord.scattered, background, world, depth - 1)

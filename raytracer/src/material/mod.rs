@@ -4,6 +4,7 @@ pub mod isotropic;
 pub mod lambertian;
 pub mod matel;
 pub mod rectangle;
+pub mod staticmaterial;
 
 pub use crate::{
     basic::{
