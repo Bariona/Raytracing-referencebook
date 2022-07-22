@@ -1,9 +1,9 @@
 #![allow(clippy::many_single_char_names)]
-use std::sync::Arc;
+use std::{sync::Arc, f64::INFINITY};
 
-use crate::{bvh::aabb::AABB, Hit::Hittable};
+use crate::{bvh::aabb::AABB, Hit::Hittable, basic::random_range};
 
-use super::{HitRecord, Material, Point3, Vec3};
+use super::{HitRecord, Material, Point3, Vec3, Ray};
 
 pub struct Rectanglexy {
     mp: Arc<dyn Material>,
@@ -123,6 +123,33 @@ impl Hittable for Rectanglexz {
             Point3::new(self.x1, self.k + 0.0001, self.z1),
         ))
     }
+
+    fn pdf_value(&self, origin: &Point3, v: &Vec3) -> f64 {
+        let getn = self.hit(
+            &Ray::new(*origin, *v, 0.), 
+            0.001, 
+            INFINITY
+        );
+
+        if getn.is_none() {
+            return 0.;
+        }
+        let rec = getn.unwrap();
+        let area = (self.x1 - self.x0) * (self.z1 - self.z0);
+        let distance_squared = rec.t.powi(2) * v.len_square();
+        let cos = Vec3::dot(v, &rec.normal).abs() / v.len();
+        
+        distance_squared / (cos * area)
+    }
+    fn random(&self, origin: &Vec3) -> Vec3 {
+        let point = Point3::new(
+            random_range(self.x0, self.x1), 
+            self.k, 
+            random_range(self.z0, self.z1)
+        );
+        point - *origin
+    }
+
 }
 
 pub struct Rectangleyz {

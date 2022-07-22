@@ -43,8 +43,9 @@ impl Material for Dielectric {
 
         Some(ScatterRecord {
             attenuation,
-            scattered,
-            pdf: 0.,
+            is_specular: true,
+            specular_ray: Ray::new(rec.p, )
+            pdf_ptr: None,
         })
     }
 }

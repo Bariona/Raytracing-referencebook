@@ -5,10 +5,12 @@ pub mod bvh;
 pub mod material;
 pub mod obj;
 pub mod texture;
+pub mod pdf;
 
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use pdf::{cospdf::CosPDF, PDF, hittablepdf::HittablePDF, mixturepdf::MixturePDF};
 use std::{
     f64::INFINITY,
     fs::File,
@@ -21,11 +23,13 @@ use basic::{
     camera::Camera,
     random_double,
     RAY::Ray,
-    VEC3::{Color, Point3, Vec3},
+    VEC3::{Color, Point3, Vec3}, random_range,
 };
 use Hit::{Hittable, HittableList};
 
-fn ray_color(r: Ray, background: Color, world: &HittableList, depth: i32) -> Color {
+use crate::{material::rectangle::Rectanglexz, Hit::Lambertian};
+
+fn ray_color(r: Ray, background: Color, world: &HittableList, lights: Arc<dyn Hittable>, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new(0., 0., 0.);
     }
@@ -36,14 +40,18 @@ fn ray_color(r: Ray, background: Color, world: &HittableList, depth: i32) -> Col
             //若击中物体后还可以反射,光=物体本身发光+原先光强*attenuation
             // scatter_pdf: 可以理解为scatter沿着某方向的加权后的概率 (概率函数函数)
             // div pdf: 可以理解为sample_per_pixel在采样时的概率密度函数
-            emitted
-                + ScatterRecord.attenuation
-                    * (rec
-                        .mat
-                        .scatter_pdf(&r, &rec, &ScatterRecord.scattered)
-                        .unwrap())
-                    * ray_color(ScatterRecord.scattered, background, world, depth - 1)
-                    / ScatterRecord.pdf
+
+            let light_pdf = HittablePDF::new(lights.clone(), rec.p);
+            let cosin_pdf = CosPDF::new(&rec.normal);
+            let mix_pdf = MixturePDF::new(Arc::new(light_pdf), Arc::new(cosin_pdf));
+
+            let scattered = Ray::new(rec.p, mix_pdf.generate(), r.time());
+            let pdf_val = mix_pdf.value(&scattered.direction());
+
+            emitted 
+                + ScatterRecord.attenuation * (rec.mat).scatter_pdf(&r, &rec, &scattered).unwrap()
+                    * ray_color(scattered, background, world, lights, depth - 1) / pdf_val
+
         } else {
             // 若物体本身不反射光(本身就是光源), 则光=物体本身发光
             emitted
@@ -71,13 +79,13 @@ fn write_color(pixel_color: Color, samples_per_pixel: usize) -> [u8; 3] {
 }
 
 fn main() {
-    const THREAD_NUMBER: usize = 32;
+    const THREAD_NUMBER: usize = 8;
 
     // Image
     const RATIO: f64 = 1.;
     const IMAGE_WIDTH: usize = 600;
     const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / RATIO) as usize;
-    const SAMPLES_PER_PIXEL: usize = 500;
+    const SAMPLES_PER_PIXEL: usize = 1000;
     const MAX_DEPTH: i32 = 50;
 
     let quality = 100;
@@ -91,7 +99,9 @@ fn main() {
     let mut lf = Point3::new(13., 2., 3.); // look_from
     let mut la = Point3::new(0., 0., 0.); // look_at
     let mut vfov = 20.;
-
+    let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
+    let lights = Arc::new(Rectanglexz::new(213., 343., 227., 332., 554., white));
+    
     match switch {
         0 => {
             world = HittableList::two_sphere();
@@ -190,6 +200,7 @@ fn main() {
         let (tx, rx) = mpsc::channel();
 
         let clone_world = world.clone(); // due to multithread's ownership problem
+        let clone_lights = lights.clone();
 
         thread_pool.push((
             thread::spawn(move || {
@@ -207,7 +218,7 @@ fn main() {
                             let u = (i as f64 + random_double()) / (IMAGE_WIDTH as f64 - 1.);
                             let v = (j as f64 + random_double()) / (IMAGE_HEIGHT as f64 - 1.);
                             let r = cam.get_ray(u, v);
-                            pixel_color += ray_color(r, background, &clone_world, MAX_DEPTH);
+                            pixel_color += ray_color(r, background, &clone_world, clone_lights.clone(), MAX_DEPTH);
                         }
                         section_pixel_color.push(pixel_color);
                         progress += 1;

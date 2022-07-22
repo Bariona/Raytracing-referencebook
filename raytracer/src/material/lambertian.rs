@@ -1,6 +1,6 @@
 use std::{f64::consts::PI, sync::Arc};
 
-use crate::texture::{solid_color::SolidColor, Texture};
+use crate::{texture::{solid_color::SolidColor, Texture}, pdf::{random_cosine_direction, cospdf::{self, CosPDF}}};
 
 use super::{Color, HitRecord, Material, Ray, ScatterRecord, Vec3, ONB};
 
@@ -22,29 +22,15 @@ impl Lambertian {
 impl Material for Lambertian {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
         let basis = ONB::build(&rec.normal);
-        let direction = basis.local(Vec3::random_cosine_direction());
+        let direction = basis.local(random_cosine_direction());
         let scattered = Ray::new(rec.p, direction.unit_vector(), r_in.time());
+        // println!("{}", Vec3::dot(&basis.w(), &scattered.direction()) / PI);
         Some(ScatterRecord {
-            scattered,
+            is_specular: false,
+            specular_ray: Ray::default(),
             attenuation: self.albedo.value(rec.u, rec.v, &rec.p).unwrap(),
-            pdf: Vec3::dot(&basis.w(), &scattered.direction()) / PI,
+            pdf_ptr: Some(Arc::new(CosPDF::new(&rec.normal))),
         })
-
-        // let mut scatter_direction = rec.normal + Vec3::random_unit_vector();
-
-        // if scatter_direction.near_zero() {
-        //     scatter_direction = rec.normal;
-        // }
-
-        // let scattered = Ray::new(rec.p, scatter_direction.unit_vector(), r_in.time());
-        // let attenuation = (self.albedo).value(rec.u, rec.v, &rec.p).unwrap();
-
-        // Some(ScatterRecord {
-        //     attenuation,
-        //     scattered,
-        //     //pdf: Vec3::dot(&rec.normal, &scattered.direction()) / PI,
-        //     pdf: 0.5 / PI,
-        // })
     }
     fn scatter_pdf(&self, _r_in: &Ray, rec: &HitRecord, scattered: &Ray) -> Option<f64> {
         let cosine = Vec3::dot(&rec.normal, &scattered.direction().unit_vector());

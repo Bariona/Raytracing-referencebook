@@ -6,6 +6,9 @@ pub mod matel;
 pub mod rectangle;
 pub mod staticmaterial;
 
+use std::sync::Arc;
+
+use crate::pdf::PDF;
 pub use crate::{
     basic::{
         RAY::Ray,
@@ -16,8 +19,9 @@ pub use crate::{
 
 pub struct ScatterRecord {
     pub attenuation: Color,
-    pub scattered: Ray,
-    pub pdf: f64,
+    pub is_specular: bool,
+    pub specular_ray: Ray,
+    pub pdf_ptr: Option<Arc<dyn PDF>>,
 }
 
 pub struct ONB {
@@ -43,7 +47,7 @@ impl ONB {
     pub fn build(n: &Vec3) -> Self {
         let mut axis = [Vec3::default(); 3];
         axis[2] = n.unit_vector();
-        let a = if axis[2].x() > 0.9 {
+        let a = if axis[2].x().abs() > 0.9 {
             Vec3::new(0., 1., 0.)
         } else {
             Vec3::new(1., 0., 0.)
