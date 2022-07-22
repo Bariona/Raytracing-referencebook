@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use std::{sync::Arc, f64::INFINITY};
+use std::{f64::INFINITY, sync::Arc};
 
 use crate::{
     basic::degree_to_radians,

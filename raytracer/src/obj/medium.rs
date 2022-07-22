@@ -1,5 +1,5 @@
 #![allow(clippy::question_mark)]
-use std::{sync::Arc, f64::INFINITY};
+use std::{f64::INFINITY, sync::Arc};
 
 use crate::{
     material::isotropic::Isotropic,

@@ -6,7 +6,6 @@ use std::f64::consts::PI;
 
 use rand::Rng;
 
-
 pub fn degree_to_radians(degree: f64) -> f64 {
     degree * PI / 180.
 }
