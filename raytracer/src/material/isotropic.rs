@@ -25,8 +25,9 @@ impl Material for Isotropic {
         let attenuation = self.albedo.value(rec.u, rec.v, &rec.p).unwrap();
         Some(ScatterRecord {
             attenuation,
-            scattered,
-            pdf: 0.,
+            is_specular: true,
+            specular_ray: scattered,
+            pdf_ptr: None,
         })
     }
 }

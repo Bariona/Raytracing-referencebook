@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use rand::{thread_rng, Rng};
+
 use crate::{
     basic::{self, random_range},
     bvh::{
@@ -51,10 +53,10 @@ impl HitRecord {
 pub trait Hittable: Send + Sync {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<AABB>;
-    fn pdf_value(&self, o: &Point3, v: &Vec3) -> f64 {
+    fn pdf_value(&self, _o: &Point3, _v: &Vec3) -> f64 {
         0.0
     }
-    fn random(&self, o: &Vec3) -> Vec3 {
+    fn random(&self, _o: &Vec3) -> Vec3 {
         Vec3::new(1., 0., 0.)
     }
 }
@@ -105,6 +107,20 @@ impl Hittable for HittableList {
             }
         }
         Some(tmp_box)
+    }
+
+    fn pdf_value(&self, o: &Point3, v: &Vec3) -> f64 {
+        let weigh = 1. / self.objects.len() as f64;
+        let mut sum = 0.;
+
+        for object in self.objects.iter() {
+            sum += weigh * object.pdf_value(o, v);
+        }
+
+        sum
+    }
+    fn random(&self, o: &Vec3) -> Vec3 {
+        self.objects[thread_rng().gen_range(0..self.objects.len())].random(o)
     }
 }
 
@@ -330,33 +346,35 @@ impl HittableList {
             0.,
             white.clone(),
         )));
-        world.objects.push(Arc::new(Rectanglexy::new(
-            0.,
-            555.,
-            0.,
-            555.,
-            555.,
-            white.clone(),
-        )));
+        world
+            .objects
+            .push(Arc::new(Rectanglexy::new(0., 555., 0., 555., 555., white)));
 
+        let aluminum = Arc::new(Metal::new(Color::new(0.8, 0.85, 0.88), 0.));
         let box1 = Arc::new(Cube::new(
             Point3::new(0., 0., 0.),
             Point3::new(165., 330., 165.),
-            white.clone(),
+            aluminum,
         ));
         let box1 = Arc::new(Rotatey::new(box1, 15.));
         let box1 = Arc::new(Translate::new(box1, Vec3::new(265., 0., 295.)));
-
-        let box2 = Arc::new(Cube::new(
-            Point3::new(0., 0., 0.),
-            Point3::new(165., 165., 165.),
-            white,
-        ));
-        let box2 = Arc::new(Rotatey::new(box2, -18.));
-        let box2 = Arc::new(Translate::new(box2, Vec3::new(130., 0., 65.)));
-
         world.objects.push(box1);
-        world.objects.push(box2);
+
+        let glass = Arc::new(Dielectric::new(1.5));
+        world.objects.push(Arc::new(Sphere::new(
+            Point3::new(190., 90., 190.),
+            90.,
+            glass,
+        )));
+
+        // let box2 = Arc::new(Cube::new(
+        //     Point3::new(0., 0., 0.),
+        //     Point3::new(165., 165., 165.),
+        //     white,
+        // ));
+        // let box2 = Arc::new(Rotatey::new(box2, -18.));
+        // let box2 = Arc::new(Translate::new(box2, Vec3::new(130., 0., 65.)));
+        // world.objects.push(box2);
 
         world
     }

@@ -39,12 +39,12 @@ impl Material for Dielectric {
             dir = Vec3::refract(&unit_direction, &rec.normal, refraction_ratio);
         }
 
-        let scattered = Ray::new(rec.p, dir, r_in.time());
+        // let scattered = Ray::new(rec.p, dir, r_in.time());
 
         Some(ScatterRecord {
             attenuation,
             is_specular: true,
-            specular_ray: Ray::new(rec.p, )
+            specular_ray: Ray::new(rec.p, dir, r_in.time()),
             pdf_ptr: None,
         })
     }

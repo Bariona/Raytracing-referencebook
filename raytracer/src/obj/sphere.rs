@@ -1,11 +1,11 @@
-use std::{f64::consts::PI, sync::Arc};
+use std::{f64::consts::PI, f64::INFINITY, sync::Arc};
 
 use super::super::Hit::{HitRecord, Hittable};
 pub use crate::basic::{
     RAY::Ray,
     VEC3::{Point3, Vec3},
 };
-use crate::{bvh::aabb::AABB, Hit::Material};
+use crate::{bvh::aabb::AABB, material::ONB, pdf::random_to_sphere, Hit::Material};
 
 pub struct Sphere {
     pub center: Point3,
@@ -22,12 +22,14 @@ impl Sphere {
         }
     }
     pub fn get_sphere_uv(p: &Point3) -> Option<[f64; 2]> {
-        // p: a given point on the sphere of radius one, centered at the origin.
-        // u: returned value [0,1] of angle around the Y axis from X=-1.
-        // v: returned value [0,1] of angle from Y=-1 to Y=+1.
-        //     <1 0 0> yields <0.50 0.50>       <-1  0  0> yields <0.00 0.50>
-        //     <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
-        //     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
+        /*
+            p: a given point on the sphere of radius one, centered at the origin.
+            u: returned value [0,1] of angle around the Y axis from X=-1.
+            v: returned value [0,1] of angle from Y=-1 to Y=+1.
+               <1 0 0> yields <0.50 0.50>       <-1  0  0> yields <0.00 0.50>
+               <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
+               <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
+        */
 
         let theta = (-p.y()).acos();
         let phi = p.x().atan2(-p.z()) + PI;
@@ -79,5 +81,22 @@ impl Hittable for Sphere {
     fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<AABB> {
         let cub = Vec3::new(self.radius, self.radius, self.radius);
         Some(AABB::new(self.center - cub, self.center + cub))
+    }
+
+    fn pdf_value(&self, o: &Point3, v: &Vec3) -> f64 {
+        if self.hit(&Ray::new(*o, *v, 0.), 0.001, INFINITY).is_none() {
+            return 0.;
+        }
+
+        let cos_theta_max = (1. - self.radius.powi(2) / (self.center - *o).len_square()).sqrt();
+        let solid_angle = 2. * PI * (1. - cos_theta_max);
+
+        1. / solid_angle
+    }
+    fn random(&self, o: &Vec3) -> Vec3 {
+        let direction = self.center - *o;
+        let distance_squared = direction.len_square();
+        let uvw = ONB::build(&direction);
+        uvw.local(random_to_sphere(self.radius, distance_squared))
     }
 }

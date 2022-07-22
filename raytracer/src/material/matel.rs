@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use super::{Color, HitRecord, Material, Ray, ScatterRecord, Vec3};
 
 pub struct Metal {
@@ -23,7 +21,7 @@ impl Material for Metal {
             attenuation: self.albedo,
             is_specular: true,
             specular_ray: Ray::new(
-                rec.p, 
+                rec.p,
                 reflected + self.fuzz * Vec3::random_in_unit_sphere(),
                 0.,
             ),
