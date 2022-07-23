@@ -27,7 +27,7 @@ use basic::{
 };
 use Hit::{Dielectric, Hittable, HittableList};
 
-use crate::{material::rectangle::Rectanglexz, Hit::Sphere};
+use crate::{obj::rectangle::Rectanglexz, Hit::Sphere};
 
 fn ray_color(
     r: Ray,
@@ -54,7 +54,8 @@ fn ray_color(
                     );
             }
 
-            let light_ptr = Arc::new(HittablePDF::new(Arc::new((*lights).clone()), rec.p)); // 按光源位置分布的pdf
+            let light_ptr = HittablePDF::new(*lights, rec.p); // 按光源位置分布的pdf
+
             let mix_pdf = MixturePDF::new(light_ptr, ScatterRecord.pdf_ptr.unwrap()); // 将light_pdf 与 cos分布(如lambertian)进行mixture
 
             let scattered = Ray::new(rec.p, mix_pdf.generate(), r.time());
@@ -121,20 +122,27 @@ fn main() {
         227.,
         332.,
         554.,
-        Arc::new(Dielectric::new(0.)),
+        Dielectric::new(0.),
     )));
-
-    // let lights = Arc::new(Sphere::new(Point3::new(190., 90., 190.), 90., white));
-
-    // lights.objects.push(
-    //     Arc::new(Rectanglexz::new(213., 343., 227., 332., 554., white.clone()))
-    // );
+ 
     lights.objects.push(Arc::new(Sphere::new(
         Point3::new(190., 90., 190.),
         90.,
-        Arc::new(Dielectric::new(0.)),
+        Dielectric::new(0.),
     )));
 
+    // let lights = Arc::new(Sphere::new(Point3::new(190., 90., 190.), 90., white));
+    // lights.objects.push(
+    //     Arc::new(Rectanglexz::new(213., 343., 227., 332., 554., white.clone()))
+    // );
+
+    world = HittableList::cornell_box();
+    background = Color::new(0., 0., 0.);
+    lf = Point3::new(278., 278., -800.);
+    la = Point3::new(278., 278., 0.);
+    vfov = 40.;
+
+    /*
     match switch {
         0 => {
             world = HittableList::two_sphere();
@@ -177,6 +185,7 @@ fn main() {
             aperture = 0.1;
         }
     }
+    */
 
     // Camera
 

@@ -1,4 +1,4 @@
-use std::{f64::consts::PI, f64::INFINITY, sync::Arc};
+use std::{f64::consts::PI, f64::INFINITY};
 
 use super::super::Hit::{HitRecord, Hittable};
 pub use crate::basic::{
@@ -7,14 +7,14 @@ pub use crate::basic::{
 };
 use crate::{bvh::aabb::AABB, material::ONB, pdf::random_to_sphere, Hit::Material};
 
-pub struct Sphere {
+pub struct Sphere<M: Material> {
     pub center: Point3,
     pub radius: f64,
-    pub mat: Arc<dyn Material>,
+    pub mat: M,
 }
 
-impl Sphere {
-    pub fn new(center: Point3, radius: f64, mat: Arc<dyn Material>) -> Self {
+impl<M: Material> Sphere<M> {
+    pub fn new(center: Point3, radius: f64, mat: M) -> Self {
         Self {
             center,
             radius,
@@ -38,7 +38,7 @@ impl Sphere {
     }
 }
 
-impl Hittable for Sphere {
+impl<M: Material> Hittable for Sphere<M> {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = r.origin() - self.center;
         let a = r.direction().len_square();

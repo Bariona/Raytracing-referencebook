@@ -1,12 +1,10 @@
 #![allow(clippy::many_single_char_names)]
-use std::{f64::INFINITY, sync::Arc};
+use std::f64::INFINITY;
 
-use crate::{basic::random_range, bvh::aabb::AABB, Hit::Hittable};
+use crate::{basic::random_range, bvh::aabb::AABB, Hit::{Hittable, Material, Vec3, Point3, HitRecord, Ray}};
 
-use super::{HitRecord, Material, Point3, Ray, Vec3};
-
-pub struct Rectanglexy {
-    mp: Arc<dyn Material>,
+pub struct Rectanglexy<M: Material> {
+    mp: M,
     x0: f64,
     x1: f64,
     y0: f64,
@@ -14,8 +12,8 @@ pub struct Rectanglexy {
     k: f64,
 }
 
-impl Rectanglexy {
-    pub fn new(x0: f64, x1: f64, y0: f64, y1: f64, k: f64, mp: Arc<dyn Material>) -> Self {
+impl<M: Material> Rectanglexy<M> {
+    pub fn new(x0: f64, x1: f64, y0: f64, y1: f64, k: f64, mp: M) -> Self {
         Self {
             mp,
             x0,
@@ -27,8 +25,8 @@ impl Rectanglexy {
     }
 }
 
-impl Hittable for Rectanglexy {
-    fn hit(&self, r: &super::Ray, t_min: f64, t_max: f64) -> Option<super::HitRecord> {
+impl<M: Material> Hittable for Rectanglexy<M> {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let t = (self.k - r.origin().z()) / r.direction().z();
         if t < t_min || t > t_max {
             return None;
@@ -65,8 +63,8 @@ impl Hittable for Rectanglexy {
     }
 }
 
-pub struct Rectanglexz {
-    mp: Arc<dyn Material>,
+pub struct Rectanglexz<M: Material> {
+    mp: M,
     x0: f64,
     x1: f64,
     z0: f64,
@@ -74,8 +72,8 @@ pub struct Rectanglexz {
     k: f64,
 }
 
-impl Rectanglexz {
-    pub fn new(x0: f64, x1: f64, z0: f64, z1: f64, k: f64, mp: Arc<dyn Material>) -> Self {
+impl<M: Material> Rectanglexz<M> {
+    pub fn new(x0: f64, x1: f64, z0: f64, z1: f64, k: f64, mp: M) -> Self {
         Self {
             mp,
             x0,
@@ -87,8 +85,8 @@ impl Rectanglexz {
     }
 }
 
-impl Hittable for Rectanglexz {
-    fn hit(&self, r: &super::Ray, t_min: f64, t_max: f64) -> Option<super::HitRecord> {
+impl<M: Material> Hittable for Rectanglexz<M> {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let t = (self.k - r.origin().y()) / r.direction().y();
         if t < t_min || t > t_max {
             return None;
@@ -147,8 +145,8 @@ impl Hittable for Rectanglexz {
     }
 }
 
-pub struct Rectangleyz {
-    mp: Arc<dyn Material>,
+pub struct Rectangleyz<M: Material> {
+    mp: M,
     y0: f64,
     y1: f64,
     z0: f64,
@@ -156,8 +154,8 @@ pub struct Rectangleyz {
     k: f64,
 }
 
-impl Rectangleyz {
-    pub fn new(y0: f64, y1: f64, z0: f64, z1: f64, k: f64, mp: Arc<dyn Material>) -> Self {
+impl<M: Material> Rectangleyz<M> {
+    pub fn new(y0: f64, y1: f64, z0: f64, z1: f64, k: f64, mp: M) -> Self {
         Self {
             mp,
             y0,
@@ -169,8 +167,8 @@ impl Rectangleyz {
     }
 }
 
-impl Hittable for Rectangleyz {
-    fn hit(&self, r: &super::Ray, t_min: f64, t_max: f64) -> Option<super::HitRecord> {
+impl<M: Material> Hittable for Rectangleyz<M> {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let t = (self.k - r.origin().x()) / r.direction().x();
         if t < t_min || t > t_max {
             return None;

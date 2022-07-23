@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use crate::{
     bvh::aabb::AABB,
-    material::rectangle::{Rectanglexy, Rectanglexz, Rectangleyz},
-    Hit::{Hittable, HittableList, Material, Point3},
+    obj::rectangle::{Rectanglexy, Rectanglexz, Rectangleyz},
+    Hit::{Hittable, HittableList, Material, Point3}, texture::Texture,
 };
 
 pub struct Cube {
@@ -13,7 +13,7 @@ pub struct Cube {
 }
 
 impl Cube {
-    pub fn new(p0: Point3, p1: Point3, ptr: Arc<dyn Material>) -> Self {
+    pub fn new<T: Material>(p0: Point3, p1: Point3, ptr: T) -> Self {
         let mut side = HittableList::default();
 
         side.objects.push(Arc::new(Rectanglexy::new(
@@ -22,7 +22,7 @@ impl Cube {
             p0.y,
             p1.y,
             p1.z,
-            ptr.clone(),
+            ptr,
         )));
         side.objects.push(Arc::new(Rectanglexy::new(
             p0.x,
@@ -30,7 +30,7 @@ impl Cube {
             p0.y,
             p1.y,
             p0.z,
-            ptr.clone(),
+            ptr,
         )));
 
         side.objects.push(Arc::new(Rectanglexz::new(
@@ -39,7 +39,7 @@ impl Cube {
             p0.z,
             p1.z,
             p1.y,
-            ptr.clone(),
+            ptr,
         )));
         side.objects.push(Arc::new(Rectanglexz::new(
             p0.x,
@@ -47,7 +47,7 @@ impl Cube {
             p0.z,
             p1.z,
             p0.y,
-            ptr.clone(),
+            ptr,
         )));
 
         side.objects.push(Arc::new(Rectangleyz::new(
@@ -56,7 +56,7 @@ impl Cube {
             p0.z,
             p1.z,
             p1.x,
-            ptr.clone(),
+            ptr,
         )));
         side.objects.push(Arc::new(Rectangleyz::new(
             p0.y, p1.y, p0.z, p1.z, p0.x, ptr,

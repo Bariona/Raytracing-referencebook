@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use super::super::Hit::{HitRecord, Hittable};
 pub use crate::basic::{
     RAY::Ray,
@@ -7,27 +5,27 @@ pub use crate::basic::{
 };
 use crate::{
     bvh::aabb::{surrounding_box, AABB},
-    Hit::Material,
+    Hit::Material, 
 };
 
-pub struct MoveSphere {
+pub struct MoveSphere<M: Material> {
     pub center0: Point3,
     pub center1: Point3,
     pub radius: f64,
     pub time0: f64,
     pub time1: f64,
-    pub mat: Arc<dyn Material>,
+    pub mat: M,
     // pub hit: HitRecord,
 }
 
-impl MoveSphere {
+impl<M: Material> MoveSphere<M> {
     pub fn new(
         center0: Point3,
         center1: Point3,
         time0: f64,
         time1: f64,
         radius: f64,
-        mat: Arc<dyn Material>,
+        mat: M,
     ) -> Self {
         Self {
             center0,
@@ -44,7 +42,7 @@ impl MoveSphere {
     }
 }
 
-impl Hittable for MoveSphere {
+impl<M: Material> Hittable for MoveSphere<M> {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = r.origin() - self.center(r.time());
         let a = r.direction().len_square();

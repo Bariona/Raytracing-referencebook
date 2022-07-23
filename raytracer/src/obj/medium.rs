@@ -1,36 +1,37 @@
 #![allow(clippy::question_mark)]
-use std::{f64::INFINITY, sync::Arc};
+use std::f64::INFINITY;
 
 use crate::{
     material::isotropic::Isotropic,
-    texture::Texture,
+    texture::{Texture, solid_color::SolidColor},
     Hit::{random_double, Color, HitRecord, Hittable, Material, Vec3},
 };
 
-pub struct ConstantMedium {
-    boundary: Arc<dyn Hittable>,
-    phase: Arc<dyn Material>,
+pub struct ConstantMedium<H: Hittable, M: Material> {
+    boundary: H,
+    phase: M,
     neg_inv_density: f64,
 }
 
-impl ConstantMedium {
-    pub fn new(boundary: Arc<dyn Hittable>, density: f64, color: Color) -> Self {
-        Self {
+impl<H: Hittable, T: Texture> ConstantMedium<H, Isotropic<T>> {
+    pub fn new(boundary: H, density: f64, color: Color) -> ConstantMedium<H, Isotropic<SolidColor>> {
+        ConstantMedium {
             boundary,
-            phase: Arc::new(Isotropic::new_color(color)),
+            phase: Isotropic::<SolidColor>::new_color(color),
             neg_inv_density: -1. / density,
         }
     }
-    pub fn new_tx(boundary: Arc<dyn Hittable>, density: f64, texture: Arc<dyn Texture>) -> Self {
-        Self {
+    pub fn new_tx(boundary: H, density: f64, texture: T) -> Self {
+        ConstantMedium {
             boundary,
-            phase: Arc::new(Isotropic::new(texture)),
+            phase: Isotropic::new(texture),
             neg_inv_density: -1. / density,
         }
     }
 }
 
-impl Hittable for ConstantMedium {
+impl<H: Hittable, M: Material> Hittable for ConstantMedium<H, M> {
+
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<crate::bvh::aabb::AABB> {
         self.boundary.bounding_box(time0, time1)
     }

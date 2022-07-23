@@ -3,12 +3,8 @@ pub mod diffuse;
 pub mod isotropic;
 pub mod lambertian;
 pub mod matel;
-pub mod rectangle;
-pub mod staticmaterial;
 
-use std::sync::Arc;
-
-use crate::pdf::PDF;
+use crate::pdf::cospdf::CosPDF;
 pub use crate::{
     basic::{
         RAY::Ray,
@@ -21,7 +17,7 @@ pub struct ScatterRecord {
     pub attenuation: Color,
     pub is_specular: bool,
     pub specular_ray: Ray,
-    pub pdf_ptr: Option<Arc<dyn PDF>>,
+    pub pdf_ptr: Option<CosPDF>,
 }
 
 pub struct ONB {
@@ -60,6 +56,7 @@ impl ONB {
 
 pub trait Material: Send + Sync {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<ScatterRecord>;
+
     fn scatter_pdf(&self, _r_in: &Ray, _rec: &HitRecord, _scattered: &Ray) -> Option<f64> {
         None
     }

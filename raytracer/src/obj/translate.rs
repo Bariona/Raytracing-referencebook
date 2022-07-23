@@ -1,23 +1,21 @@
-use std::sync::Arc;
-
 use crate::{
     bvh::aabb::AABB,
     Hit::{Hittable, Ray, Vec3},
 };
 
 // 物体空间平移 offset
-pub struct Translate {
-    ptr: Arc<dyn Hittable>,
+pub struct Translate<H: Hittable> {
+    ptr: H,
     offset: Vec3,
 }
 
-impl Translate {
-    pub fn new(ptr: Arc<dyn Hittable>, offset: Vec3) -> Self {
+impl<H: Hittable> Translate<H> {
+    pub fn new(ptr: H, offset: Vec3) -> Self {
         Self { ptr, offset }
     }
 }
 
-impl Hittable for Translate {
+impl<H: Hittable>  Hittable for Translate<H> {
     fn hit(&self, r: &crate::Hit::Ray, t_min: f64, t_max: f64) -> Option<crate::Hit::HitRecord> {
         let moved_r = Ray::new(r.origin() - self.offset, r.direction(), r.time());
         if let Some(mut rec) = self.ptr.hit(&moved_r, t_min, t_max) {

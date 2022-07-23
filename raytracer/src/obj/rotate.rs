@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use std::{f64::INFINITY, sync::Arc};
+use std::f64::INFINITY;
 
 use crate::{
     basic::degree_to_radians,
@@ -7,16 +7,16 @@ use crate::{
     Hit::{Hittable, Point3, Ray, Vec3},
 };
 
-pub struct Rotatey {
-    ptr: Arc<dyn Hittable>,
+pub struct Rotatey<T: Hittable> {
+    ptr: T,
     sin_theta: f64,
     cos_theta: f64,
     hasbox: bool,
     bbox: AABB,
 }
 
-impl Rotatey {
-    pub fn new(ptr: Arc<dyn Hittable>, angle: f64) -> Self {
+impl<T: Hittable> Rotatey<T> {
+    pub fn new(ptr: T, angle: f64) -> Self {
         let radians = degree_to_radians(angle);
         let sin_theta = radians.sin();
         let cos_theta = radians.cos();
@@ -58,7 +58,7 @@ impl Rotatey {
     }
 }
 
-impl Hittable for Rotatey {
+impl<T: Hittable> Hittable for Rotatey<T> {
     fn hit(&self, r: &crate::Hit::Ray, t_min: f64, t_max: f64) -> Option<crate::Hit::HitRecord> {
         let mut origin = r.origin();
         let mut direction = r.direction();

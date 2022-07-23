@@ -1,24 +1,22 @@
-use std::sync::Arc;
-
 use crate::Hit::{Color, Point3};
 
 use super::{solid_color::SolidColor, Texture};
 
-pub struct Checker {
-    pub odd: Arc<dyn Texture>,
-    pub even: Arc<dyn Texture>,
+pub struct Checker<T: Texture> {
+    pub odd: T,
+    pub even: T,
 }
 
-impl Checker {
-    pub fn new(c1: Color, c2: Color) -> Self {
-        Self {
-            odd: Arc::new(SolidColor::new(c1.x, c1.y, c1.z)),
-            even: Arc::new(SolidColor::new(c2.x, c2.y, c2.z)),
+impl<T: Texture> Checker<T> {
+    pub fn new(c1: Color, c2: Color) -> Checker<SolidColor> {
+        Checker {
+            odd: SolidColor::new(c1.x, c1.y, c1.z),
+            even: SolidColor::new(c2.x, c2.y, c2.z),
         }
     }
 }
 
-impl Texture for Checker {
+impl<T: Texture> Texture for Checker<T> {
     fn value(&self, u: f64, v: f64, p: &Point3) -> Option<crate::Hit::Color> {
         let sines = (p.x() * 10.).sin() * (p.y() * 10.).sin() * (p.z() * 10.).sin();
         if sines < 0. {

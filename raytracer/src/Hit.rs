@@ -1,3 +1,4 @@
+#![allow(unused_imports)]
 use std::sync::Arc;
 
 use rand::{thread_rng, Rng};
@@ -10,13 +11,13 @@ use crate::{
     },
     material::{
         diffuse::DiffuseLight,
-        rectangle::{Rectanglexy, Rectanglexz, Rectangleyz},
     },
     obj::{
         cube::Cube, medium::ConstantMedium, move_sphere::MoveSphere, rotate::Rotatey,
         translate::Translate,
+        rectangle::{Rectanglexy, Rectanglexz, Rectangleyz},
     },
-    texture::{checker::Checker, image_texture::ImageTexture, perlin::NoiseTexture},
+    texture::{checker::Checker, image_texture::ImageTexture, perlin::NoiseTexture, solid_color::SolidColor},
 };
 pub use crate::{
     basic::{
@@ -66,7 +67,8 @@ pub trait Hittable: Send + Sync {
 
 #[derive(Default, Clone)]
 pub struct HittableList {
-    pub objects: Vec<Arc<dyn Hittable>>,
+    pub objects: Vec<Arc<dyn Hittable>>, 
+    // 这里必须要用Arc来实现多态(因为有Vec的存在, 需要实现一个Vector中存多种类型)
 }
 
 impl Hittable for HittableList {
@@ -125,6 +127,79 @@ impl Hittable for HittableList {
 }
 
 impl HittableList {
+    pub fn cornell_box() -> Self {
+        let mut world = HittableList::default();
+        let red = Lambertian::<SolidColor>::new(Color::new(0.65, 0.05, 0.05));
+        let white = Lambertian::<SolidColor>::new(Color::new(0.73, 0.73, 0.73));
+        let green = Lambertian::<SolidColor>::new(Color::new(0.12, 0.45, 0.15));
+        let light = DiffuseLight::<SolidColor>::new(Color::new(15., 15., 15.));
+
+        world
+            .objects
+            .push(Arc::new(Rectangleyz::new(0., 555., 0., 555., 555., green)));
+        world
+            .objects
+            .push(Arc::new(Rectangleyz::new(0., 555., 0., 555., 0., red)));
+        world.objects.push(Arc::new(Rectanglexz::new(
+            213., 343., 227., 332., 554., light,
+        )));
+        world.objects.push(Arc::new(Rectanglexz::new(
+            0.,
+            555.,
+            0.,
+            555.,
+            555.,
+            white,
+        )));
+        world.objects.push(Arc::new(Rectanglexz::new(
+            0.,
+            555.,
+            0.,
+            555.,
+            0.,
+            white,
+        )));
+        world.objects.push(Arc::new(Rectanglexy::new(
+            0.,
+            555.,
+            0.,
+            555.,
+            555.,
+            white,
+        )));
+
+        let aluminum = Metal::new(Color::new(0.8, 0.85, 0.88), 0.);
+        let box1 = Cube::new(
+            Point3::new(0., 0., 0.),
+            Point3::new(165., 330., 165.),
+            aluminum,
+        );
+        let box1 = Rotatey::new(box1, 15.);
+        let box1 = Translate::new(box1, Vec3::new(265., 0., 295.));
+        world.objects.push(Arc::new(box1));
+        
+        let glass = Dielectric::new(1.5);
+        world.objects.push(Arc::new(
+            Sphere::new(
+                Point3::new(190., 90., 190.), 
+                90., 
+                glass
+            )
+        ));
+
+        // let box2 = Arc::new(Cube::new(
+        //     Point3::new(0., 0., 0.),
+        //     Point3::new(165., 165., 165.),
+        //     white,
+        // ));
+        // let box2 = Arc::new(Rotatey::new(box2, -18.));
+        // let box2 = Arc::new(Translate::new(box2, Vec3::new(130., 0., 65.)));
+        // world.objects.push(box2);
+
+        world
+    }
+
+    /* 
     pub fn final_scene() -> Self {
         let mut world = HittableList::default();
 
@@ -314,71 +389,7 @@ impl HittableList {
         // world.objects.push(Arc::new(Cube::new(Point3::new(265., 0., 295.), Point3::new(430., 330., 460.), white.clone())));
         world
     }
-    pub fn cornell_box() -> Self {
-        let mut world = HittableList::default();
-        let red = Arc::new(Lambertian::new(Color::new(0.65, 0.05, 0.05)));
-        let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
-        let green = Arc::new(Lambertian::new(Color::new(0.12, 0.45, 0.15)));
-        let light = Arc::new(DiffuseLight::new(Color::new(15., 15., 15.)));
-
-        world
-            .objects
-            .push(Arc::new(Rectangleyz::new(0., 555., 0., 555., 555., green)));
-        world
-            .objects
-            .push(Arc::new(Rectangleyz::new(0., 555., 0., 555., 0., red)));
-        world.objects.push(Arc::new(Rectanglexz::new(
-            213., 343., 227., 332., 554., light,
-        )));
-        world.objects.push(Arc::new(Rectanglexz::new(
-            0.,
-            555.,
-            0.,
-            555.,
-            555.,
-            white.clone(),
-        )));
-        world.objects.push(Arc::new(Rectanglexz::new(
-            0.,
-            555.,
-            0.,
-            555.,
-            0.,
-            white.clone(),
-        )));
-        world
-            .objects
-            .push(Arc::new(Rectanglexy::new(0., 555., 0., 555., 555., white)));
-
-        let aluminum = Arc::new(Metal::new(Color::new(0.8, 0.85, 0.88), 0.));
-        let box1 = Arc::new(Cube::new(
-            Point3::new(0., 0., 0.),
-            Point3::new(165., 330., 165.),
-            aluminum,
-        ));
-        let box1 = Arc::new(Rotatey::new(box1, 15.));
-        let box1 = Arc::new(Translate::new(box1, Vec3::new(265., 0., 295.)));
-        world.objects.push(box1);
-
-        let glass = Arc::new(Dielectric::new(1.5));
-        world.objects.push(Arc::new(Sphere::new(
-            Point3::new(190., 90., 190.),
-            90.,
-            glass,
-        )));
-
-        // let box2 = Arc::new(Cube::new(
-        //     Point3::new(0., 0., 0.),
-        //     Point3::new(165., 165., 165.),
-        //     white,
-        // ));
-        // let box2 = Arc::new(Rotatey::new(box2, -18.));
-        // let box2 = Arc::new(Translate::new(box2, Vec3::new(130., 0., 65.)));
-        // world.objects.push(box2);
-
-        world
-    }
-
+    
     pub fn simple_light() -> Self {
         let mut world = HittableList::default();
         let pertext = Arc::new(NoiseTexture::new(4.));
@@ -526,4 +537,5 @@ impl HittableList {
         }));
         world
     }
+    */
 }
