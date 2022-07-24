@@ -5,3 +5,4 @@ pub mod rectangle;
 pub mod rotate;
 pub mod sphere;
 pub mod translate;
+pub mod triangle;

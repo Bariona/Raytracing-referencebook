@@ -8,7 +8,7 @@ use crate::{
 };
 
 pub struct Rectanglexy<M: Material> {
-    mp: M,
+    mat: M,
     x0: f64,
     x1: f64,
     y0: f64,
@@ -17,9 +17,9 @@ pub struct Rectanglexy<M: Material> {
 }
 
 impl<M: Material> Rectanglexy<M> {
-    pub fn new(x0: f64, x1: f64, y0: f64, y1: f64, k: f64, mp: M) -> Self {
+    pub fn new(x0: f64, x1: f64, y0: f64, y1: f64, k: f64, mat: M) -> Self {
         Self {
-            mp,
+            mat,
             x0,
             x1,
             y0,
@@ -45,9 +45,17 @@ impl<M: Material> Hittable for Rectanglexy<M> {
         let v = (y - self.y0) / (self.y1 - self.y0);
         let t = t;
         let outward_normal = Vec3::new(0., 0., 1.);
-        let mut rec = HitRecord::new(t, r.at(t), Vec3::default(), bool::default(), &self.mp, u, v);
+        let mut rec = HitRecord::new(
+            t,
+            r.at(t),
+            Vec3::default(),
+            bool::default(),
+            &self.mat,
+            u,
+            v,
+        );
         rec.set_face_normal(r, &outward_normal);
-        // rec.mat = self.mp;
+        // rec.mat = self.mat;
         // rec.p = r.at(t);
         Some(rec)
     }
@@ -60,7 +68,7 @@ impl<M: Material> Hittable for Rectanglexy<M> {
 }
 
 pub struct Rectanglexz<M: Material> {
-    mp: M,
+    mat: M,
     x0: f64,
     x1: f64,
     z0: f64,
@@ -69,9 +77,9 @@ pub struct Rectanglexz<M: Material> {
 }
 
 impl<M: Material> Rectanglexz<M> {
-    pub fn new(x0: f64, x1: f64, z0: f64, z1: f64, k: f64, mp: M) -> Self {
+    pub fn new(x0: f64, x1: f64, z0: f64, z1: f64, k: f64, mat: M) -> Self {
         Self {
-            mp,
+            mat,
             x0,
             x1,
             z0,
@@ -98,10 +106,18 @@ impl<M: Material> Hittable for Rectanglexz<M> {
         let t = t;
         let outward_normal = Vec3::new(0., 1., 0.);
 
-        let mut rec = HitRecord::new(t, r.at(t), Vec3::default(), bool::default(), &self.mp, u, v);
+        let mut rec = HitRecord::new(
+            t,
+            r.at(t),
+            Vec3::default(),
+            bool::default(),
+            &self.mat,
+            u,
+            v,
+        );
 
         rec.set_face_normal(r, &outward_normal);
-        // rec.mat = self.mp;
+        // rec.mat = self.mat;
         // rec.p = r.at(t);
         Some(rec)
     }
@@ -136,7 +152,7 @@ impl<M: Material> Hittable for Rectanglexz<M> {
 }
 
 pub struct Rectangleyz<M: Material> {
-    mp: M,
+    mat: M,
     y0: f64,
     y1: f64,
     z0: f64,
@@ -145,9 +161,9 @@ pub struct Rectangleyz<M: Material> {
 }
 
 impl<M: Material> Rectangleyz<M> {
-    pub fn new(y0: f64, y1: f64, z0: f64, z1: f64, k: f64, mp: M) -> Self {
+    pub fn new(y0: f64, y1: f64, z0: f64, z1: f64, k: f64, mat: M) -> Self {
         Self {
-            mp,
+            mat,
             y0,
             y1,
             z0,
@@ -176,10 +192,18 @@ impl<M: Material> Hittable for Rectangleyz<M> {
         let t = t;
         let outward_normal = Vec3::new(1., 0., 0.);
 
-        let mut rec = HitRecord::new(t, r.at(t), Vec3::default(), bool::default(), &self.mp, u, v);
+        let mut rec = HitRecord::new(
+            t,
+            r.at(t),
+            Vec3::default(),
+            bool::default(),
+            &self.mat,
+            u,
+            v,
+        );
 
         rec.set_face_normal(r, &outward_normal);
-        // rec.mat = self.mp;
+        // rec.mat = self.mat;
         // rec.p = r.at(t);
         Some(rec)
     }

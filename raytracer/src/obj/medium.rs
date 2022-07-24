@@ -8,6 +8,7 @@ use crate::{
 };
 
 pub struct ConstantMedium<H: Hittable, M: Material> {
+    // 带有smoke效果
     boundary: H,
     phase: M,
     neg_inv_density: f64,

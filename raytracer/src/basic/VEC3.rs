@@ -46,7 +46,7 @@ impl Vec3 {
     pub fn dot(&self, rhs: &Vec3) -> f64 {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
-    pub fn cross(&self, rhs: &Self) -> Self {
+    pub fn cross(&self, rhs: Self) -> Self {
         Self {
             x: self.y * rhs.z - self.z * rhs.y,
             y: -self.x * rhs.z + self.z * rhs.x,

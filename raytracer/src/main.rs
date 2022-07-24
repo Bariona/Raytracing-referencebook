@@ -5,6 +5,7 @@ pub mod bvh;
 pub mod material;
 pub mod obj;
 pub mod pdf;
+pub mod scene;
 pub mod texture;
 
 use console::style;
@@ -25,9 +26,7 @@ use basic::{
     RAY::Ray,
     VEC3::{Color, Point3, Vec3},
 };
-use Hit::{Dielectric, Hittable, HittableList};
-
-use crate::{obj::rectangle::Rectanglexz, Hit::Sphere};
+use Hit::{Hittable, HittableList};
 
 fn ray_color(
     r: Ray,
@@ -107,38 +106,17 @@ fn main() {
     let path = "output/output.jpg";
 
     // World
-    // let switch = 6;
-    let world;
+
     let aperture = 0.;
     let background = Color::new(0., 0., 0.);
     let lf = Point3::new(278., 278., -800.);
     let la = Point3::new(278., 278., 0.);
     let vfov = 40.;
 
-    let mut lights = HittableList::default();
-    lights.objects.push(Arc::new(Rectanglexz::new(
-        213.,
-        343.,
-        227.,
-        332.,
-        554.,
-        Dielectric::new(0.),
-    )));
-
-    lights.objects.push(Arc::new(Sphere::new(
-        Point3::new(190., 90., 190.),
-        90.,
-        Dielectric::new(0.),
-    )));
-
-    // let lights = Arc::new(Sphere::new(Point3::new(190., 90., 190.), 90., white));
-    // lights.objects.push(
-    //     Arc::new(Rectanglexz::new(213., 343., 227., 332., 554., white.clone()))
-    // );
-
-    world = HittableList::cornell_box();
+    let (world, lights) = scene::cornell_box();
 
     /*
+    let switch = 6;
     match switch {
         0 => {
             world = HittableList::two_sphere();

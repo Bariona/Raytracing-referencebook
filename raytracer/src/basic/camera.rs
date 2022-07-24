@@ -39,8 +39,8 @@ impl Camera {
         // let focal_length = 1.;
 
         let w = (lfrom - lat).unit_vector();
-        let u = Vec3::cross(&vup, &w).unit_vector();
-        let v = Vec3::cross(&w, &u);
+        let u = Vec3::cross(&vup, w).unit_vector();
+        let v = Vec3::cross(&w, u);
 
         let ori = lfrom;
         let hori = focus_dist * viewport_width * u;

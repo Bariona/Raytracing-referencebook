@@ -48,8 +48,8 @@ impl ONB {
         } else {
             Vec3::new(1., 0., 0.)
         };
-        axis[1] = Vec3::cross(&axis[2], &a).unit_vector();
-        axis[0] = Vec3::cross(&axis[2], &axis[1]);
+        axis[1] = Vec3::cross(&axis[2], a).unit_vector();
+        axis[0] = Vec3::cross(&axis[2], axis[1]);
         Self { axis }
     }
 }
