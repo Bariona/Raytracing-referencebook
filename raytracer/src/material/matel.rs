@@ -1,5 +1,6 @@
 use super::{Color, HitRecord, Material, Ray, ScatterRecord, Vec3};
 
+#[derive(Clone, Copy)]
 pub struct Metal {
     pub albedo: Color,
     pub fuzz: f64,

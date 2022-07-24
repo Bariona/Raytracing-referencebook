@@ -7,6 +7,7 @@ use crate::{
 
 use super::{Color, HitRecord, Material, Ray, ScatterRecord, Vec3};
 
+#[derive(Clone)]
 pub struct Lambertian<T: Texture> {
     pub albedo: T, // albedo 为实现了Texture的一个泛型
 }

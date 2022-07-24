@@ -15,7 +15,7 @@ impl<H: Hittable> Translate<H> {
     }
 }
 
-impl<H: Hittable>  Hittable for Translate<H> {
+impl<H: Hittable> Hittable for Translate<H> {
     fn hit(&self, r: &crate::Hit::Ray, t_min: f64, t_max: f64) -> Option<crate::Hit::HitRecord> {
         let moved_r = Ray::new(r.origin() - self.offset, r.direction(), r.time());
         if let Some(mut rec) = self.ptr.hit(&moved_r, t_min, t_max) {

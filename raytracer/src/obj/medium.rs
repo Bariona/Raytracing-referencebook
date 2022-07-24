@@ -3,7 +3,7 @@ use std::f64::INFINITY;
 
 use crate::{
     material::isotropic::Isotropic,
-    texture::{Texture, solid_color::SolidColor},
+    texture::{solid_color::SolidColor, Texture},
     Hit::{random_double, Color, HitRecord, Hittable, Material, Vec3},
 };
 
@@ -14,7 +14,11 @@ pub struct ConstantMedium<H: Hittable, M: Material> {
 }
 
 impl<H: Hittable, T: Texture> ConstantMedium<H, Isotropic<T>> {
-    pub fn new(boundary: H, density: f64, color: Color) -> ConstantMedium<H, Isotropic<SolidColor>> {
+    pub fn new(
+        boundary: H,
+        density: f64,
+        color: Color,
+    ) -> ConstantMedium<H, Isotropic<SolidColor>> {
         ConstantMedium {
             boundary,
             phase: Isotropic::<SolidColor>::new_color(color),
@@ -31,7 +35,6 @@ impl<H: Hittable, T: Texture> ConstantMedium<H, Isotropic<T>> {
 }
 
 impl<H: Hittable, M: Material> Hittable for ConstantMedium<H, M> {
-
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<crate::bvh::aabb::AABB> {
         self.boundary.bounding_box(time0, time1)
     }
@@ -82,14 +85,14 @@ impl<H: Hittable, M: Material> Hittable for ConstantMedium<H, M> {
         let t = rec1.t + hit_distance / ray_length;
         let p = r.at(t);
 
-        Some(HitRecord {
+        Some(HitRecord::new(
             t,
             p,
-            normal: Vec3::new(1., 0., 0.),
-            front_face: true,
-            mat: self.phase.clone(),
-            u: 0.,
-            v: 0.,
-        })
+            Vec3::new(1., 0., 0.),
+            true,
+            &self.phase,
+            0.,
+            0.,
+        ))
     }
 }

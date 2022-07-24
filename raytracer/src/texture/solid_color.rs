@@ -2,6 +2,7 @@ use crate::Hit::{Color, Point3};
 
 use super::Texture;
 
+#[derive(Clone, Copy)]
 pub struct SolidColor {
     pub color_val: Color,
 }

@@ -2,18 +2,18 @@ use crate::Hit::{Hittable, Point3, Vec3};
 
 use super::PDF;
 
-pub struct HittablePDF<H: Hittable> {
+pub struct HittablePDF<'a, H: Hittable> {
     origin: Point3,
-    ptr: H,
+    ptr: &'a H,
 }
 
-impl<H: Hittable> HittablePDF<H> {
-    pub fn new(ptr: H, origin: Vec3) -> Self {
+impl<'a, H: Hittable> HittablePDF<'a, H> {
+    pub fn new(ptr: &'a H, origin: Vec3) -> Self {
         Self { origin, ptr }
     }
 }
 
-impl<H: Hittable> PDF for HittablePDF<H> {
+impl<'a, H: Hittable> PDF for HittablePDF<'a, H> {
     fn value(&self, direction: &Vec3) -> f64 {
         self.ptr.pdf_value(&self.origin, direction)
     }

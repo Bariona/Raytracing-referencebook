@@ -63,15 +63,15 @@ impl<M: Material> Hittable for Sphere<M> {
         let outward_normal = (r.at(root) - self.center) / self.radius;
         let tup = Self::get_sphere_uv(&outward_normal).unwrap();
 
-        let mut rec = HitRecord {
-            t: root,
-            p: r.at(root),
-            normal: Vec3::default(),
-            front_face: bool::default(),
-            mat: (self.mat).clone(),
-            u: tup[0],
-            v: tup[1],
-        };
+        let mut rec = HitRecord::new(
+            root,
+            r.at(root),
+            Vec3::default(),
+            bool::default(),
+            &self.mat,
+            tup[0],
+            tup[1],
+        );
 
         rec.set_face_normal(r, &outward_normal);
 

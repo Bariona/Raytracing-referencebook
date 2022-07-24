@@ -1,7 +1,11 @@
 #![allow(clippy::many_single_char_names)]
 use std::f64::INFINITY;
 
-use crate::{basic::random_range, bvh::aabb::AABB, Hit::{Hittable, Material, Vec3, Point3, HitRecord, Ray}};
+use crate::{
+    basic::random_range,
+    bvh::aabb::AABB,
+    Hit::{HitRecord, Hittable, Material, Point3, Ray, Vec3},
+};
 
 pub struct Rectanglexy<M: Material> {
     mp: M,
@@ -41,15 +45,7 @@ impl<M: Material> Hittable for Rectanglexy<M> {
         let v = (y - self.y0) / (self.y1 - self.y0);
         let t = t;
         let outward_normal = Vec3::new(0., 0., 1.);
-        let mut rec = HitRecord {
-            u,
-            v,
-            t,
-            mat: self.mp.clone(),
-            p: r.at(t),
-            normal: Vec3::default(),
-            front_face: bool::default(),
-        };
+        let mut rec = HitRecord::new(t, r.at(t), Vec3::default(), bool::default(), &self.mp, u, v);
         rec.set_face_normal(r, &outward_normal);
         // rec.mat = self.mp;
         // rec.p = r.at(t);
@@ -101,15 +97,9 @@ impl<M: Material> Hittable for Rectanglexz<M> {
         let v = (z - self.z0) / (self.z1 - self.z0);
         let t = t;
         let outward_normal = Vec3::new(0., 1., 0.);
-        let mut rec = HitRecord {
-            u,
-            v,
-            t,
-            mat: self.mp.clone(),
-            p: r.at(t),
-            normal: Vec3::default(),
-            front_face: bool::default(),
-        };
+
+        let mut rec = HitRecord::new(t, r.at(t), Vec3::default(), bool::default(), &self.mp, u, v);
+
         rec.set_face_normal(r, &outward_normal);
         // rec.mat = self.mp;
         // rec.p = r.at(t);
@@ -185,15 +175,9 @@ impl<M: Material> Hittable for Rectangleyz<M> {
 
         let t = t;
         let outward_normal = Vec3::new(1., 0., 0.);
-        let mut rec = HitRecord {
-            u,
-            v,
-            t,
-            mat: self.mp.clone(),
-            p: r.at(t),
-            normal: Vec3::default(),
-            front_face: bool::default(),
-        };
+
+        let mut rec = HitRecord::new(t, r.at(t), Vec3::default(), bool::default(), &self.mp, u, v);
+
         rec.set_face_normal(r, &outward_normal);
         // rec.mat = self.mp;
         // rec.p = r.at(t);

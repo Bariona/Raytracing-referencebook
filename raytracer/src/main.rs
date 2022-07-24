@@ -54,7 +54,7 @@ fn ray_color(
                     );
             }
 
-            let light_ptr = HittablePDF::new(*lights, rec.p); // 按光源位置分布的pdf
+            let light_ptr = HittablePDF::new(lights, rec.p); // 按光源位置分布的pdf
 
             let mix_pdf = MixturePDF::new(light_ptr, ScatterRecord.pdf_ptr.unwrap()); // 将light_pdf 与 cos分布(如lambertian)进行mixture
 
@@ -94,26 +94,26 @@ fn write_color(pixel_color: Color, samples_per_pixel: usize) -> [u8; 3] {
 }
 
 fn main() {
-    const THREAD_NUMBER: usize = 32;
+    const THREAD_NUMBER: usize = 8;
 
     // Image
     const RATIO: f64 = 1.;
     const IMAGE_WIDTH: usize = 600;
     const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / RATIO) as usize;
-    const SAMPLES_PER_PIXEL: usize = 1000;
+    const SAMPLES_PER_PIXEL: usize = 10;
     const MAX_DEPTH: i32 = 50;
 
     let quality = 100;
     let path = "output/output.jpg";
 
     // World
-    let switch = 6;
+    // let switch = 6;
     let world;
-    let mut aperture = 0.;
-    let mut background = Color::new(0.7, 0.8, 1.);
-    let mut lf = Point3::new(13., 2., 3.); // look_from
-    let mut la = Point3::new(0., 0., 0.); // look_at
-    let mut vfov = 20.;
+    let aperture = 0.;
+    let background = Color::new(0., 0., 0.);
+    let lf = Point3::new(278., 278., -800.);
+    let la = Point3::new(278., 278., 0.);
+    let vfov = 40.;
 
     let mut lights = HittableList::default();
     lights.objects.push(Arc::new(Rectanglexz::new(
@@ -124,7 +124,7 @@ fn main() {
         554.,
         Dielectric::new(0.),
     )));
- 
+
     lights.objects.push(Arc::new(Sphere::new(
         Point3::new(190., 90., 190.),
         90.,
@@ -137,10 +137,6 @@ fn main() {
     // );
 
     world = HittableList::cornell_box();
-    background = Color::new(0., 0., 0.);
-    lf = Point3::new(278., 278., -800.);
-    la = Point3::new(278., 278., 0.);
-    vfov = 40.;
 
     /*
     match switch {
@@ -242,7 +238,7 @@ fn main() {
         let (tx, rx) = mpsc::channel();
 
         let clone_world = world.clone(); // due to multithread's ownership problem
-        let clone_lights = Arc::new(lights.clone());
+        let clone_lights = lights.clone();
 
         thread_pool.push((
             thread::spawn(move || {

@@ -9,15 +9,19 @@ use crate::{
         aabb::{surrounding_box, AABB},
         bvh_node::BvhNode,
     },
-    material::{
-        diffuse::DiffuseLight,
-    },
+    material::diffuse::DiffuseLight,
     obj::{
-        cube::Cube, medium::ConstantMedium, move_sphere::MoveSphere, rotate::Rotatey,
-        translate::Translate,
+        cube::Cube,
+        medium::ConstantMedium,
+        move_sphere::MoveSphere,
         rectangle::{Rectanglexy, Rectanglexz, Rectangleyz},
+        rotate::Rotatey,
+        translate::Translate,
     },
-    texture::{checker::Checker, image_texture::ImageTexture, perlin::NoiseTexture, solid_color::SolidColor},
+    texture::{
+        checker::Checker, image_texture::ImageTexture, perlin::NoiseTexture,
+        solid_color::SolidColor,
+    },
 };
 pub use crate::{
     basic::{
@@ -29,17 +33,37 @@ pub use crate::{
     obj::sphere::Sphere,
 };
 
-pub struct HitRecord {
+pub struct HitRecord<'a> {
     pub p: Point3,        // 碰撞点
     pub normal: Vec3,     // 碰撞点的单 位 法 向 量(与Ray的方向相反)
     pub t: f64,           // 表示 p = Ray(t)
     pub front_face: bool, // 是否Ray来自外侧
-    pub mat: Arc<dyn Material>,
+    pub mat: &'a dyn Material,
     pub u: f64, // u, v 物体表面 surface的coordinates
     pub v: f64, // u, v \in [0, 1]
 }
 
-impl HitRecord {
+impl<'a> HitRecord<'a> {
+    pub fn new(
+        t: f64,
+        p: Point3,
+        normal: Vec3,
+        front_face: bool,
+        mat: &'a dyn Material,
+        u: f64,
+        v: f64,
+    ) -> Self {
+        Self {
+            p,
+            normal,
+            t,
+            front_face,
+            mat,
+            u,
+            v,
+        }
+    }
+
     pub fn set_face_normal(&mut self, r: &Ray, outward_normal: &Vec3) {
         self.front_face = Vec3::dot(&r.direction(), outward_normal) < 0.;
         self.normal = if self.front_face {
@@ -67,7 +91,7 @@ pub trait Hittable: Send + Sync {
 
 #[derive(Default, Clone)]
 pub struct HittableList {
-    pub objects: Vec<Arc<dyn Hittable>>, 
+    pub objects: Vec<Arc<dyn Hittable>>,
     // 这里必须要用Arc来实现多态(因为有Vec的存在, 需要实现一个Vector中存多种类型)
 }
 
@@ -149,7 +173,7 @@ impl HittableList {
             0.,
             555.,
             555.,
-            white,
+            white.clone(),
         )));
         world.objects.push(Arc::new(Rectanglexz::new(
             0.,
@@ -157,16 +181,11 @@ impl HittableList {
             0.,
             555.,
             0.,
-            white,
+            white.clone(),
         )));
-        world.objects.push(Arc::new(Rectanglexy::new(
-            0.,
-            555.,
-            0.,
-            555.,
-            555.,
-            white,
-        )));
+        world
+            .objects
+            .push(Arc::new(Rectanglexy::new(0., 555., 0., 555., 555., white)));
 
         let aluminum = Metal::new(Color::new(0.8, 0.85, 0.88), 0.);
         let box1 = Cube::new(
@@ -177,15 +196,13 @@ impl HittableList {
         let box1 = Rotatey::new(box1, 15.);
         let box1 = Translate::new(box1, Vec3::new(265., 0., 295.));
         world.objects.push(Arc::new(box1));
-        
+
         let glass = Dielectric::new(1.5);
-        world.objects.push(Arc::new(
-            Sphere::new(
-                Point3::new(190., 90., 190.), 
-                90., 
-                glass
-            )
-        ));
+        world.objects.push(Arc::new(Sphere::new(
+            Point3::new(190., 90., 190.),
+            90.,
+            glass,
+        )));
 
         // let box2 = Arc::new(Cube::new(
         //     Point3::new(0., 0., 0.),
@@ -199,7 +216,7 @@ impl HittableList {
         world
     }
 
-    /* 
+    /*
     pub fn final_scene() -> Self {
         let mut world = HittableList::default();
 
@@ -389,7 +406,7 @@ impl HittableList {
         // world.objects.push(Arc::new(Cube::new(Point3::new(265., 0., 295.), Point3::new(430., 330., 460.), white.clone())));
         world
     }
-    
+
     pub fn simple_light() -> Self {
         let mut world = HittableList::default();
         let pertext = Arc::new(NoiseTexture::new(4.));

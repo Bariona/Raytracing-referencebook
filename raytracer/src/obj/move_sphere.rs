@@ -5,7 +5,7 @@ pub use crate::basic::{
 };
 use crate::{
     bvh::aabb::{surrounding_box, AABB},
-    Hit::Material, 
+    Hit::Material,
 };
 
 pub struct MoveSphere<M: Material> {
@@ -64,15 +64,15 @@ impl<M: Material> Hittable for MoveSphere<M> {
             }
         }
 
-        let mut rec = HitRecord {
-            t: root,
-            p: r.at(root),
-            normal: Vec3::default(),
-            front_face: bool::default(),
-            mat: (self.mat).clone(),
-            u: 0.,
-            v: 0.,
-        };
+        let mut rec = HitRecord::new(
+            root,
+            r.at(root),
+            Vec3::default(),
+            bool::default(),
+            &self.mat,
+            0.,
+            0.,
+        );
         let outward_normal = (rec.p - self.center(r.time())) / self.radius;
         rec.set_face_normal(r, &outward_normal);
 
