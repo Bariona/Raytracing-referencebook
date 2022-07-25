@@ -37,7 +37,7 @@ pub use crate::{
 pub fn load_obj(world: &mut HittableList) {
     let rate = 200.; // 物体放大倍数
     let filejpg = "obj_material/Char_Patrick.png";
-    let offset = Vec3::new(250., 100., 400.);
+    let offset = Vec3::new(250., 30., 400.);
 
     let obj = tobj::load_obj(
         "obj_material/patrick.obj",
@@ -112,24 +112,10 @@ pub fn cornell_box() -> (HittableList, HittableList) {
     let red = Lambertian::<SolidColor>::new(Color::new(0.65, 0.05, 0.05));
     let white = Lambertian::<SolidColor>::new(Color::new(0.73, 0.73, 0.73));
     let green = Lambertian::<SolidColor>::new(Color::new(0.12, 0.45, 0.15));
-    let light = DiffuseLight::<SolidColor>::new(Color::new(20., 20., 20.));
+    let light = DiffuseLight::<SolidColor>::new(Color::new(15., 15., 15.));
 
-    world.add(Arc::new(Rectangleyz::new(
-        0.,
-        555.,
-        0.,
-        555.,
-        555.,
-        green,
-    )));
-    world.add(Arc::new(Rectangleyz::new(
-        0.,
-        555.,
-        0.,
-        555.,
-        0.,
-        red,
-    )));
+    world.add(Arc::new(Rectangleyz::new(0., 555., 0., 555., 555., green)));
+    world.add(Arc::new(Rectangleyz::new(0., 555., 0., 555., 0., red)));
     world.add(Arc::new(Rectanglexz::new(
         0.,
         555.,
