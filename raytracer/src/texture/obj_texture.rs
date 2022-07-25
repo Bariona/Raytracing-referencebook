@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use image::RgbImage;
 
 use crate::Hit::Color;
@@ -11,11 +13,11 @@ pub struct ObjTexture {
     pub v2: f64,
     pub u3: f64,
     pub v3: f64,
-    pub img: RgbImage,
+    pub img: Arc<RgbImage>,
 }
 
 impl ObjTexture {
-    pub fn new(filename: &str, u1: f64, v1: f64, u2: f64, v2: f64, u3: f64, v3: f64) -> Self {
+    pub fn new(img: Arc<RgbImage>, u1: f64, v1: f64, u2: f64, v2: f64, u3: f64, v3: f64) -> Self {
         Self {
             u1,
             v1,
@@ -23,9 +25,7 @@ impl ObjTexture {
             v2,
             u3,
             v3,
-            img: image::open(filename)
-                .expect("load image failed")
-                .into_rgb8(),
+            img
         }
     }
 }

@@ -35,19 +35,25 @@ pub use crate::{
 };
 
 pub fn load_obj(world: &mut HittableList) {
-    let rate = 200.; // 物体放大倍数
-    let filejpg = "obj_material/Char_Patrick.png";
-    let offset = Vec3::new(250., 30., 400.);
+    let rate = 20.; // 物体放大倍数
+    
+    // let filejpg = "obj_material/Char_Patrick.png";
+    let fileimg = "obj_material/10483_baseball_diffuse.jpg";
+    let img_ptr = Arc::new(image::open(fileimg).expect("load image failed").into_rgb8());
+    
+    let offset = Vec3::new(250., 150., 500.);
 
     let obj = tobj::load_obj(
-        "obj_material/patrick.obj",
+        "obj_material/10483_baseball_v1_L3.obj",
+        //"obj_material/patrick.obj",
         &tobj::LoadOptions {
             single_index: true,
             triangulate: true,
             ..Default::default()
         },
     );
-
+    
+    // panic!();
     assert!(obj.is_ok());
 
     let (models, _materials) = obj.expect("Failed to load OBJ file");
@@ -67,8 +73,9 @@ pub fn load_obj(world: &mut HittableList) {
             let y = mesh.positions[3 * id + 1] as f64;
             let z = mesh.positions[3 * id + 2] as f64;
             vertices.push(Point3::new(x, y, z));
+           
         }
-
+        
         let mut object = HittableList::default();
         for i in 0..mesh.indices.len() / 3 {
             // [idx_x, idx_y, idx_z, ... ] 三个点为一个triangle
@@ -86,7 +93,7 @@ pub fn load_obj(world: &mut HittableList) {
             let u3 = mesh.texcoords[2 * idx_z] as f64;
             let v3 = mesh.texcoords[2 * idx_z + 1] as f64;
 
-            let mat = ObjTexture::new(filejpg, u1, v1, u2, v2, u3, v3);
+            let mat = ObjTexture::new(img_ptr.clone(), u1, v1, u2, v2, u3, v3);
             //let mut col = mat1.value(0.5, 0., &Point3::default()).unwrap();
 
             let tri = Triangle::new(
@@ -96,8 +103,11 @@ pub fn load_obj(world: &mut HittableList) {
                 Lambertian::new_texture(mat),
             );
             object.add(Arc::new(tri));
+            // println!("{}", i);
         }
+        
         //std::process::exit(0);
+        println!("{}", object.objects.len());
         let object = BvhNode::new_from_vec(object.objects, 0., 1.);
         let object = Rotatey::new(object, 180.);
         let object = Translate::new(object, offset);
