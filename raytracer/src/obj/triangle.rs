@@ -54,10 +54,18 @@ impl<M: Material> Hittable for Triangle<M> {
         let b2 = self.v0.y - self.v2.y;
         let c2 = self.v0.y - p.y;
 
-        let u = (c1 * b2 - b1 * c2) / (a1 * b2 - b1 * a2);
-        let v = (a1 * c2 - a2 * c1) / (a1 * b2 - b1 * a2);
+        let beta = (c1 * b2 - b1 * c2) / (a1 * b2 - b1 * a2);
+        let gamma = (a1 * c2 - a2 * c1) / (a1 * b2 - b1 * a2);
 
-        let mut rec = HitRecord::new(t, p, Vec3::default(), bool::default(), &self.mat, u, v);
+        let mut rec = HitRecord::new(
+            t,
+            p,
+            Vec3::default(),
+            bool::default(),
+            &self.mat,
+            beta,
+            gamma,
+        );
         rec.set_face_normal(r, &n);
         Some(rec)
     }

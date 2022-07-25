@@ -19,8 +19,8 @@ use crate::{
         triangle::Triangle,
     },
     texture::{
-        checker::Checker, image_texture::ImageTexture, perlin::NoiseTexture,
-        solid_color::SolidColor,
+        checker::Checker, image_texture::ImageTexture, obj_texture::ObjTexture,
+        perlin::NoiseTexture, solid_color::SolidColor, Texture,
     },
     Hit::{self, HittableList},
 };
@@ -35,11 +35,14 @@ pub use crate::{
 };
 
 pub fn load_obj(world: &mut HittableList) {
-    let rate = 120.; // 物体放大倍数
+    let rate = 200.; // 物体放大倍数
+    let filejpg = "obj_material/Char_Patrick.png";
+    let offset = Vec3::new(250., 100., 400.);
+
     let obj = tobj::load_obj(
-        "objfile/patrick.obj",
+        "obj_material/patrick.obj",
         &tobj::LoadOptions {
-            single_index: false,
+            single_index: true,
             triangulate: true,
             ..Default::default()
         },
@@ -56,7 +59,9 @@ pub fn load_obj(world: &mut HittableList) {
     for m in models.iter() {
         let mesh = &m.mesh;
 
-        let mut vertices: Vec<Point3> = Vec::default();
+        assert!(!mesh.texcoords.is_empty());
+
+        let mut vertices: Vec<Point3> = Vec::default(); // 存储所用到的点集
         for id in 0..mesh.positions.len() / 3 {
             let x = mesh.positions[3 * id] as f64;
             let y = mesh.positions[3 * id + 1] as f64;
@@ -65,24 +70,37 @@ pub fn load_obj(world: &mut HittableList) {
         }
 
         let mut object = HittableList::default();
-        for v in 0..mesh.indices.len() / 3 {
-            let x = rate * vertices[mesh.indices[v * 3] as usize];
-            let y = rate * vertices[mesh.indices[v * 3 + 1] as usize];
-            let z = rate * vertices[mesh.indices[v * 3 + 2] as usize];
+        for i in 0..mesh.indices.len() / 3 {
+            // [idx_x, idx_y, idx_z, ... ] 三个点为一个triangle
+
+            let idx_x = mesh.indices[i * 3] as usize;
+            let idx_y = mesh.indices[i * 3 + 1] as usize;
+            let idx_z = mesh.indices[i * 3 + 2] as usize;
+
+            let u1 = mesh.texcoords[2 * idx_x] as f64;
+            let v1 = mesh.texcoords[2 * idx_x + 1] as f64;
+
+            let u2 = mesh.texcoords[2 * idx_y] as f64;
+            let v2 = mesh.texcoords[2 * idx_y + 1] as f64;
+
+            let u3 = mesh.texcoords[2 * idx_z] as f64;
+            let v3 = mesh.texcoords[2 * idx_z + 1] as f64;
+
+            let mat = ObjTexture::new(filejpg, u1, v1, u2, v2, u3, v3);
+            //let mut col = mat1.value(0.5, 0., &Point3::default()).unwrap();
+
             let tri = Triangle::new(
-                x,
-                y,
-                z,
-                Lambertian::<SolidColor>::new(Color::new(0.73, 0.73, 0.73)),
+                rate * vertices[idx_x],
+                rate * vertices[idx_y],
+                rate * vertices[idx_z],
+                Lambertian::new_texture(mat),
             );
             object.add(Arc::new(tri));
         }
-
-        println!("{}", object.objects.len());
-
+        //std::process::exit(0);
         let object = BvhNode::new_from_vec(object.objects, 0., 1.);
         let object = Rotatey::new(object, 180.);
-        let object = Translate::new(object, Vec3::new(200., 250., 400.));
+        let object = Translate::new(object, offset);
         world.add(Arc::new(object));
     }
 }
@@ -102,7 +120,7 @@ pub fn cornell_box() -> (HittableList, HittableList) {
         0.,
         555.,
         555.,
-        green.clone(),
+        green,
     )));
     world.add(Arc::new(Rectangleyz::new(
         0.,
@@ -110,7 +128,7 @@ pub fn cornell_box() -> (HittableList, HittableList) {
         0.,
         555.,
         0.,
-        red.clone(),
+        red,
     )));
     world.add(Arc::new(Rectanglexz::new(
         0.,

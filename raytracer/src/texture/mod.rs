@@ -1,5 +1,6 @@
 pub mod checker;
 pub mod image_texture;
+pub mod obj_texture;
 pub mod perlin;
 pub mod solid_color;
 
