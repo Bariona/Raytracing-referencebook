@@ -19,7 +19,7 @@ pub struct HitRecord<'a> {
     pub t: f64,           // 表示 p = Ray(t)
     pub front_face: bool, // 是否Ray来自外侧
     pub mat: &'a dyn Material,
-    pub u: f64, // u, v 物体表面 surface的coordinates
+    pub u: f64, // u, v: 用于贴图
     pub v: f64, // u, v \in [0, 1]
 }
 

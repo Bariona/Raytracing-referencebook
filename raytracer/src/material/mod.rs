@@ -14,13 +14,16 @@ pub use crate::{
 };
 
 pub struct ScatterRecord {
+    // 1 - attenuation := 光线的被吸收量, attenuation在某种意义上和材料的albedo(反射率)等价
+    // 理解: 物体呈现颜色(比如红色) 不是因为本身发光, 而是善于吸收其他颜色光, 而不怎么吸收红光
+    //       所以红颜色材质for example: attenuation = (0.8, 0.3, 0.3), i.e. 吸收70%的G和B, 仅吸收20%的R
     pub attenuation: Color,
     pub is_specular: bool,
     pub specular_ray: Ray,
     pub pdf_ptr: Option<CosPDF>,
 }
 
-pub struct ONB {
+pub struct ONB { // 一组正交基
     pub axis: [Vec3; 3],
 }
 

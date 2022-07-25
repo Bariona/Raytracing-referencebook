@@ -24,16 +24,16 @@ impl Material for Dielectric {
             1. / self.ir
         } else {
             self.ir
-        }; // 折射率之比
+        }; // 折射率之比(要判断光线是在光密还是在光疏部分)
 
         let unit_direction = r_in.direction().unit_vector();
         let cos_theta = Vec3::dot(&-unit_direction, &rec.normal).min(1.);
         let sin_theta = (1. - cos_theta.powi(2)).sqrt();
 
-        let judnot = refraction_ratio * sin_theta > 1.;
+        let judnot = refraction_ratio * sin_theta > 1.; // 直接是全反射的情况
 
         let dir: Vec3;
-        if judnot || Dielectric::reflectance(cos_theta, refraction_ratio) > random_double() {
+        if judnot || Dielectric::reflectance(cos_theta, refraction_ratio) > random_double() { // 比较二者的光强大小决定选哪条射线
             dir = Vec3::reflect(&unit_direction, &rec.normal);
         } else {
             dir = Vec3::refract(&unit_direction, &rec.normal, refraction_ratio);
@@ -49,3 +49,5 @@ impl Material for Dielectric {
         })
     }
 }
+
+// reference: https://blog.csdn.net/masilejfoaisegjiae/article/details/104614953

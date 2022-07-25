@@ -35,3 +35,5 @@ pub fn random_to_sphere(radius: f64, distance_squared: f64) -> Vec3 {
 
     Vec3::new(x, y, z)
 }
+
+// reference: https://blog.csdn.net/MASILEJFOAISEGJIAE/article/details/109512410

@@ -35,12 +35,12 @@ fn ray_color(
     lights: &HittableList,
     depth: i32,
 ) -> Color {
-    if depth <= 0 {
+    if depth <= 0 { // 反射过多次, 可认为碰到了一个corner, 直接返回(0,0,0)无光
         return Color::new(0., 0., 0.);
     }
 
     if let Some(rec) = world.hit(&r, 0.001, INFINITY) {
-        let emitted = rec.mat.emitted(rec.u, rec.v, &rec.p).unwrap(); // 击中物体本身发光程度
+        let emitted = rec.mat.emitted(rec.u, rec.v, &rec.p).unwrap(); // 击中物体本身发光程度(目前只有diffuse材质会emit light)
         if let Some(ScatterRecord) = (rec.mat).scatter(&r, &rec) {
             if ScatterRecord.is_specular {
                 return ScatterRecord.attenuation

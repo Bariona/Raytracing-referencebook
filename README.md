@@ -1,23 +1,23 @@
 # RayTracing-referencebook
 
-Outline:
+## Outline:
 
 - Reference Book:[《RayTracing In One Weekend》](https://raytracing.github.io/)
 
 - Goal: accomplish with Rust 
 
-Current Progress: 
+## Current Progress: 
 
-bonus part:
+1. **bonus part**:
 
-- [x] track1: Reduce Contention
-- [x] track2: Static Dispatch (增加泛型)
-- [x] track4: PDF dispatch
-- [x] track8: support for OBJ 
+- [x] track 1: Reduce Contention
+- [x] track 2: Static Dispatch (增加泛型)
+- [x] track 4: PDF dispatch
+- [x] track 8: support for OBJ 
 
 ![](output/baseball.jpg)
 
-Reference Book:
+2. Reference Book:
 
 - Book3 done
 
