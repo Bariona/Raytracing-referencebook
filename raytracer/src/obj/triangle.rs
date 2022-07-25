@@ -33,11 +33,10 @@ impl<M: Material> Hittable for Triangle<M> {
     fn hit(&self, r: &crate::material::Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let n = self.get_normal();
         let NdotRaydir = n.dot(&r.direction());
-        if NdotRaydir < EPS {
+        if NdotRaydir.abs() < EPS {
             return None;
         }
-        let d = -n.dot(&self.v0);
-        let t = -(n.dot(&r.origin()) + d) / NdotRaydir;
+        let t = Vec3::dot(&(self.v0 - r.orig), &n) / NdotRaydir;
 
         if t < t_min || t > t_max {
             return None;
@@ -48,7 +47,17 @@ impl<M: Material> Hittable for Triangle<M> {
             return None;
         }
 
-        let mut rec = HitRecord::new(t, p, Vec3::default(), bool::default(), &self.mat, 0., 0.);
+        let a1 = self.v0.x - self.v1.x;
+        let b1 = self.v0.x - self.v2.x;
+        let c1 = self.v0.x - p.x;
+        let a2 = self.v0.y - self.v1.y;
+        let b2 = self.v0.y - self.v2.y;
+        let c2 = self.v0.y - p.y;
+
+        let u = (c1 * b2 - b1 * c2) / (a1 * b2 - b1 * a2);
+        let v = (a1 * c2 - a2 * c1) / (a1 * b2 - b1 * a2);
+
+        let mut rec = HitRecord::new(t, p, Vec3::default(), bool::default(), &self.mat, u, v);
         rec.set_face_normal(r, &n);
         Some(rec)
     }

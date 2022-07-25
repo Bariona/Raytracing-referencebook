@@ -1,7 +1,6 @@
 #![allow(unused_imports)]
-use std::sync::Arc;
-
 use rand::{thread_rng, Rng};
+use std::sync::Arc;
 
 use crate::{
     basic::{self, random_range},
@@ -17,6 +16,7 @@ use crate::{
         rectangle::{Rectanglexy, Rectanglexz, Rectangleyz},
         rotate::Rotatey,
         translate::Translate,
+        triangle::Triangle,
     },
     texture::{
         checker::Checker, image_texture::ImageTexture, perlin::NoiseTexture,
@@ -34,6 +34,59 @@ pub use crate::{
     obj::sphere::Sphere,
 };
 
+pub fn load_obj(world: &mut HittableList) {
+    let rate = 120.; // 物体放大倍数
+    let obj = tobj::load_obj(
+        "objfile/patrick.obj",
+        &tobj::LoadOptions {
+            single_index: false,
+            triangulate: true,
+            ..Default::default()
+        },
+    );
+
+    assert!(obj.is_ok());
+
+    let (models, _materials) = obj.expect("Failed to load OBJ file");
+
+    // Materials might report a separate loading error if the MTL file wasn't found.
+    // If you don't need the materials, you can generate a default here and use that instead.
+    // let materials = materials.expect("Failed to load MTL file");
+
+    for m in models.iter() {
+        let mesh = &m.mesh;
+
+        let mut vertices: Vec<Point3> = Vec::default();
+        for id in 0..mesh.positions.len() / 3 {
+            let x = mesh.positions[3 * id] as f64;
+            let y = mesh.positions[3 * id + 1] as f64;
+            let z = mesh.positions[3 * id + 2] as f64;
+            vertices.push(Point3::new(x, y, z));
+        }
+
+        let mut object = HittableList::default();
+        for v in 0..mesh.indices.len() / 3 {
+            let x = rate * vertices[mesh.indices[v * 3] as usize];
+            let y = rate * vertices[mesh.indices[v * 3 + 1] as usize];
+            let z = rate * vertices[mesh.indices[v * 3 + 2] as usize];
+            let tri = Triangle::new(
+                x,
+                y,
+                z,
+                Lambertian::<SolidColor>::new(Color::new(0.73, 0.73, 0.73)),
+            );
+            object.add(Arc::new(tri));
+        }
+
+        println!("{}", object.objects.len());
+
+        let object = BvhNode::new_from_vec(object.objects, 0., 1.);
+        let object = Rotatey::new(object, 180.);
+        let object = Translate::new(object, Vec3::new(200., 250., 400.));
+        world.add(Arc::new(object));
+    }
+}
+
 pub fn cornell_box() -> (HittableList, HittableList) {
     let mut world = HittableList::default();
     let mut lights = HittableList::default();
@@ -41,10 +94,24 @@ pub fn cornell_box() -> (HittableList, HittableList) {
     let red = Lambertian::<SolidColor>::new(Color::new(0.65, 0.05, 0.05));
     let white = Lambertian::<SolidColor>::new(Color::new(0.73, 0.73, 0.73));
     let green = Lambertian::<SolidColor>::new(Color::new(0.12, 0.45, 0.15));
-    let light = DiffuseLight::<SolidColor>::new(Color::new(15., 15., 15.));
+    let light = DiffuseLight::<SolidColor>::new(Color::new(20., 20., 20.));
 
-    world.add(Arc::new(Rectangleyz::new(0., 555., 0., 555., 555., green)));
-    world.add(Arc::new(Rectangleyz::new(0., 555., 0., 555., 0., red)));
+    world.add(Arc::new(Rectangleyz::new(
+        0.,
+        555.,
+        0.,
+        555.,
+        555.,
+        green.clone(),
+    )));
+    world.add(Arc::new(Rectangleyz::new(
+        0.,
+        555.,
+        0.,
+        555.,
+        0.,
+        red.clone(),
+    )));
     world.add(Arc::new(Rectanglexz::new(
         0.,
         555.,
@@ -67,20 +134,28 @@ pub fn cornell_box() -> (HittableList, HittableList) {
     world.add(light1.clone());
     lights.add(light1);
 
-    let aluminum = Metal::new(Color::new(0.8, 0.85, 0.88), 0.);
-    let box1 = Cube::new(
-        Point3::new(0., 0., 0.),
-        Point3::new(165., 330., 165.),
-        aluminum,
-    );
-    let box1 = Rotatey::new(box1, 15.);
-    let box1 = Translate::new(box1, Vec3::new(265., 0., 295.));
-    world.add(Arc::new(box1));
+    // let aluminum = Metal::new(Color::new(0.8, 0.85, 0.88), 0.);
+    // let box1 = Cube::new(
+    //     Point3::new(0., 0., 0.),
+    //     Point3::new(165., 330., 165.),
+    //     aluminum,
+    // );
+    // let box1 = Rotatey::new(box1, 15.);
+    // let box1 = Translate::new(box1, Vec3::new(265., 0., 295.));
+    // world.add(Arc::new(box1));
 
-    let glass = Dielectric::new(1.5);
-    let ball1 = Arc::new(Sphere::new(Point3::new(190., 90., 190.), 90., glass));
-    world.add(ball1.clone());
-    lights.add(ball1);
+    // let glass = Dielectric::new(1.5);
+    // let ball1 = Arc::new(Sphere::new(Point3::new(190., 90., 190.), 90., glass));
+    // world.add(ball1.clone());
+    // lights.add(ball1);
+
+    // let tri = Triangle::new(
+    //     Point3::new(170., 50., 0.),
+    //     Point3::new(300., 50., -50.),
+    //     Point3::new(250., 205., 200.),
+    //     red,
+    // );
+    // world.add(Arc::new(tri));
 
     // let box2 = Arc::new(Cube::new(
     //     Point3::new(0., 0., 0.),
@@ -90,6 +165,8 @@ pub fn cornell_box() -> (HittableList, HittableList) {
     // let box2 = Arc::new(Rotatey::new(box2, -18.));
     // let box2 = Arc::new(Translate::new(box2, Vec3::new(130., 0., 65.)));
     // world.add(box2);
+
+    load_obj(&mut world);
 
     (world, lights)
 }

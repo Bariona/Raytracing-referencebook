@@ -16,6 +16,7 @@ pub struct Rotatey<T: Hittable> {
 }
 
 impl<T: Hittable> Rotatey<T> {
+    // 以垂直与y轴的方向rotate degree度
     pub fn new(ptr: T, angle: f64) -> Self {
         let radians = degree_to_radians(angle);
         let sin_theta = radians.sin();

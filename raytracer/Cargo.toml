@@ -8,6 +8,7 @@ edition = "2018"
 [dependencies]
 rand = "0.8.5"
 ndarray = "0.13.0"
+tobj = "3.2.2"
 
 image = "0.23"
 console = "0.9.1"    # console text format
