@@ -1,6 +1,6 @@
 #![allow(unused_imports)]
 use rand::{thread_rng, Rng};
-use std::sync::Arc;
+use std::{sync::Arc, collections::HashMap};
 
 use crate::{
     basic::{self, random_range},
@@ -14,7 +14,7 @@ use crate::{
         medium::ConstantMedium,
         move_sphere::MoveSphere,
         rectangle::{Rectanglexy, Rectanglexz, Rectangleyz},
-        rotate::Rotatey,
+        rotate::{Rotatey, self},
         translate::Translate,
         triangle::Triangle,
     },
@@ -34,17 +34,20 @@ pub use crate::{
     obj::sphere::Sphere,
 };
 
-pub fn load_obj(world: &mut HittableList) {
-    let rate = 20.; // 物体放大倍数
-    
-    // let filejpg = "obj_material/Char_Patrick.png";
-    let fileimg = "obj_material/10483_baseball_diffuse.jpg";
-    let img_ptr = Arc::new(image::open(fileimg).expect("load image failed").into_rgb8());
-    
-    let offset = Vec3::new(250., 150., 500.);
+// const ROOTFILE: &str = "obj_material/";
 
+pub fn load_obj(
+    world: &mut HittableList, 
+    rootfile: &str,
+    rate: f64, 
+    objfile: &str, 
+    offset: Vec3, 
+    rotate_angle: f64,
+) {
+    // rate: 物体放大倍数 objfile: obj格式文件名 imgfile: 贴图文件名
     let obj = tobj::load_obj(
-        "obj_material/10483_baseball_v1_L3.obj",
+        //"obj_material/10483_baseball_v1_L3.obj",
+        String::from(rootfile) + objfile,
         //"obj_material/patrick.obj",
         &tobj::LoadOptions {
             single_index: true,
@@ -53,10 +56,10 @@ pub fn load_obj(world: &mut HittableList) {
         },
     );
     
-    // panic!();
     assert!(obj.is_ok());
 
-    let (models, _materials) = obj.expect("Failed to load OBJ file");
+    let (models, materials) = obj.expect("Failed to load OBJ file");
+    let materials = materials.unwrap();
 
     // Materials might report a separate loading error if the MTL file wasn't found.
     // If you don't need the materials, you can generate a default here and use that instead.
@@ -64,6 +67,13 @@ pub fn load_obj(world: &mut HittableList) {
 
     for m in models.iter() {
         let mesh = &m.mesh;
+        let mat_id = mesh.material_id.unwrap();
+
+        let mat_file_name = String::from(rootfile) + materials[mat_id].diffuse_texture.as_str();
+
+        // println!("{}", mat_file_name);
+        // Todo: 这里重复的png/jpg可能会被多次load, 可以用一个Hash来优化一下
+        let tex = Arc::new(image::open(mat_file_name).expect("load image failed").into_rgb8());
 
         assert!(!mesh.texcoords.is_empty());
 
@@ -93,7 +103,7 @@ pub fn load_obj(world: &mut HittableList) {
             let u3 = mesh.texcoords[2 * idx_z] as f64;
             let v3 = mesh.texcoords[2 * idx_z + 1] as f64;
 
-            let mat = ObjTexture::new(img_ptr.clone(), u1, v1, u2, v2, u3, v3);
+            let mat = ObjTexture::new(tex.clone(), u1, v1, u2, v2, u3, v3);
             //let mut col = mat1.value(0.5, 0., &Point3::default()).unwrap();
 
             let tri = Triangle::new(
@@ -107,9 +117,9 @@ pub fn load_obj(world: &mut HittableList) {
         }
         
         //std::process::exit(0);
-        println!("{}", object.objects.len());
+        // println!("{}", object.objects.len());
         let object = BvhNode::new_from_vec(object.objects, 0., 1.);
-        let object = Rotatey::new(object, 180.);
+        let object = Rotatey::new(object, rotate_angle);
         let object = Translate::new(object, offset);
         world.add(Arc::new(object));
     }
@@ -122,7 +132,7 @@ pub fn cornell_box() -> (HittableList, HittableList) {
     let red = Lambertian::<SolidColor>::new(Color::new(0.65, 0.05, 0.05));
     let white = Lambertian::<SolidColor>::new(Color::new(0.73, 0.73, 0.73));
     let green = Lambertian::<SolidColor>::new(Color::new(0.12, 0.45, 0.15));
-    let light = DiffuseLight::<SolidColor>::new(Color::new(15., 15., 15.));
+    let light = DiffuseLight::<SolidColor>::new(Color::new(12., 12., 12.));
 
     world.add(Arc::new(Rectangleyz::new(0., 555., 0., 555., 555., green)));
     world.add(Arc::new(Rectangleyz::new(0., 555., 0., 555., 0., red)));
@@ -145,14 +155,40 @@ pub fn cornell_box() -> (HittableList, HittableList) {
     world.add(Arc::new(Rectanglexy::new(0., 555., 0., 555., 555., white)));
 
     let light1 = Arc::new(
-       Translate::new(
-            Rectangleyz::new(213., 343., 227., 332., 554., light),
-            Point3::new(0., 100., 0.,)
-        ),
+    //    Translate::new(
+            Rectangleyz::new(213., 343., 227., 332., 554., light.clone()),
+        //     Point3::new(0., 100., 0.,)
+        // ),
     );
     world.add(light1.clone());
     lights.add(light1);
 
+    let light2 = Arc::new(
+        //    Translate::new(
+                Rectangleyz::new(213., 343., 227., 332., 1., light.clone()),
+            //     Point3::new(0., 100., 0.,)
+            // ),
+        );
+    world.add(light2.clone());
+    lights.add(light2);
+
+    let light3 = Arc::new(
+        //    Translate::new(
+                Rectanglexz::new(213., 343., 227., 332., 554., light.clone()),
+            //     Point3::new(0., 100., 0.,)
+            // ),
+        );
+    world.add(light3.clone());
+    lights.add(light3);
+
+    let light4 = Arc::new(
+        //    Translate::new(
+                Rectanglexz::new(213., 343., 227., 332., 1., light),
+            //     Point3::new(0., 100., 0.,)
+            // ),
+        );
+    world.add(light4.clone());
+    lights.add(light4);
     // let aluminum = Metal::new(Color::new(0.8, 0.85, 0.88), 0.);
     // let box1 = Cube::new(
     //     Point3::new(0., 0., 0.),
@@ -185,7 +221,14 @@ pub fn cornell_box() -> (HittableList, HittableList) {
     // let box2 = Arc::new(Translate::new(box2, Vec3::new(130., 0., 65.)));
     // world.add(box2);
 
-    load_obj(&mut world);
+    load_obj(
+        &mut world, 
+        "obj_material/Hutaoobj/",
+        20., 
+        "Hutao.obj",
+        Vec3::new(270., 70., 450.),
+        0.,
+    );
 
     (world, lights)
 }

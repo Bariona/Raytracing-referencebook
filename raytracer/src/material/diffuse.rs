@@ -2,6 +2,7 @@ use crate::texture::{solid_color::SolidColor, Texture};
 
 use super::{Color, Material};
 
+#[derive(Clone)]
 pub struct DiffuseLight<T: Texture> {
     emit: T,
 }

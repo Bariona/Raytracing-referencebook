@@ -100,7 +100,7 @@ fn main() {
     const RATIO: f64 = 1.;
     const IMAGE_WIDTH: usize = 600;
     const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / RATIO) as usize;
-    const SAMPLES_PER_PIXEL: usize = 10;
+    const SAMPLES_PER_PIXEL: usize = 100;
     const MAX_DEPTH: i32 = 50;
 
     let quality = 100;

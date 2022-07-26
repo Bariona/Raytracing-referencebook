@@ -13,3 +13,5 @@ tobj = "3.2.2"
 image = "0.23"
 console = "0.9.1"    # console text format
 indicatif = "0.16.2" # progress bar
+
+raytracer_codegen = { path = "../raytracer_codegen" }
