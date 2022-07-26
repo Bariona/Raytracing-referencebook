@@ -53,13 +53,14 @@ fn ray_color(
                     );
             }
 
+            // 这部分目前就是Lambertian材质的Tracer
             let light_ptr = HittablePDF::new(lights, rec.p); // 按光源位置分布的pdf
 
             let mix_pdf = MixturePDF::new(light_ptr, ScatterRecord.pdf_ptr.unwrap()); // 将light_pdf 与 cos分布(如lambertian)进行mixture
 
             let scattered = Ray::new(rec.p, mix_pdf.generate(), r.time());
             let pdf_val = mix_pdf.value(&scattered.direction());
-            // println!("{}", light_ptr.value(&scattered.direction()));
+            // println!("$ {}", light_ptr.value(&scattered.direction()));
 
             //println!("{:?} {}", ScatterRecord.attenuation, pdf_val);
             emitted

@@ -4,6 +4,7 @@ use crate::{
 };
 
 // 物体空间平移 offset
+#[derive(Debug)]
 pub struct Translate<H: Hittable> {
     ptr: H,
     offset: Vec3,
@@ -36,5 +37,13 @@ impl<H: Hittable> Hittable for Translate<H> {
         } else {
             None
         }
+    }
+    fn random(&self, origin: &Vec3) -> Vec3 {
+        self.ptr.random(&(*origin - self.offset))
+    }
+    fn pdf_value(&self, o: &crate::Hit::Point3, v: &Vec3) -> f64 {
+        let res = self.ptr.pdf_value(&(*o - self.offset), v);
+        // println!("{:?} {:?} res = {}", *o - self.offset, v, res);
+        res
     }
 }

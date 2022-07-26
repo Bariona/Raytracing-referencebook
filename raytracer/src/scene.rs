@@ -144,7 +144,12 @@ pub fn cornell_box() -> (HittableList, HittableList) {
     )));
     world.add(Arc::new(Rectanglexy::new(0., 555., 0., 555., 555., white)));
 
-    let light1 = Arc::new(Rectanglexz::new(213., 343., 227., 332., 554., light));
+    let light1 = Arc::new(
+       Translate::new(
+            Rectangleyz::new(213., 343., 227., 332., 554., light),
+            Point3::new(0., 100., 0.,)
+        ),
+    );
     world.add(light1.clone());
     lights.add(light1);
 

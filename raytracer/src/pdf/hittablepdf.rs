@@ -2,6 +2,7 @@ use crate::Hit::{Hittable, Point3, Vec3};
 
 use super::PDF;
 
+#[derive(Clone)]
 pub struct HittablePDF<'a, H: Hittable> {
     origin: Point3,
     ptr: &'a H,

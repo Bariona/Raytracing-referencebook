@@ -13,6 +13,7 @@
 - [x] track 1: Reduce Contention
 - [x] track 2: Static Dispatch (增加泛型)
 - [x] track 4: PDF dispatch
+- [x] track 6: support PDF for Translate
 - [x] track 8: support for OBJ 
 
 ![](output/baseball.jpg)

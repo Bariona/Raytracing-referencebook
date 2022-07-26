@@ -15,7 +15,7 @@ impl<T1: PDF, T2: PDF> MixturePDF<T1, T2> {
 
 impl<T1: PDF, T2: PDF> PDF for MixturePDF<T1, T2> {
     fn value(&self, direction: &crate::Hit::Vec3) -> f64 {
-        // println!("{}", self.p[0].value(direction));
+        // println!("{} dir = {:?}", self.p0.value(direction), direction);
         0.5 * self.p0.value(direction) + 0.5 * self.p1.value(direction)
     }
     fn generate(&self) -> crate::Hit::Vec3 {
