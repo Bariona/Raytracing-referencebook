@@ -507,6 +507,7 @@ dependencies = [
 name = "raytracer_codegen"
 version = "0.1.0"
 dependencies = [
+ "proc-macro2",
  "quote",
  "rand",
  "syn",

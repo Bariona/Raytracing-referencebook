@@ -3,8 +3,8 @@ use super::{Color, HitRecord, Material, Ray, ScatterRecord, Vec3};
 #[derive(Clone, Copy)]
 pub struct Metal {
     pub albedo: Color, // 材质本身的反射率
-    pub fuzz: f64, // 带有哑光效果, fuzz=0表示材质表面为理想金属, 即反射角严格等于入射角
-                   // fuzz越大, 反射角和入射角的差异会越大
+    pub fuzz: f64,     // 带有哑光效果, fuzz=0表示材质表面为理想金属, 即反射角严格等于入射角
+                       // fuzz越大, 反射角和入射角的差异会越大
 }
 
 impl Metal {

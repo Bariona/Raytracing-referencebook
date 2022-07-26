@@ -25,7 +25,7 @@ impl ObjTexture {
             v2,
             u3,
             v3,
-            img
+            img,
         }
     }
 }

@@ -33,7 +33,8 @@ impl Material for Dielectric {
         let judnot = refraction_ratio * sin_theta > 1.; // 直接是全反射的情况
 
         let dir: Vec3;
-        if judnot || Dielectric::reflectance(cos_theta, refraction_ratio) > random_double() { // 比较二者的光强大小决定选哪条射线
+        if judnot || Dielectric::reflectance(cos_theta, refraction_ratio) > random_double() {
+            // 比较二者的光强大小决定选哪条射线
             dir = Vec3::reflect(&unit_direction, &rec.normal);
         } else {
             dir = Vec3::refract(&unit_direction, &rec.normal, refraction_ratio);

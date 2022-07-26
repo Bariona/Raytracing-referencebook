@@ -1,6 +1,7 @@
 #![allow(unused_imports)]
 use rand::{thread_rng, Rng};
-use std::{sync::Arc, collections::HashMap};
+use raytracer_codegen::random_scene_macro;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{
     basic::{self, random_range},
@@ -9,12 +10,12 @@ use crate::{
         bvh_node::BvhNode,
     },
     material::diffuse::DiffuseLight,
-    obj::{
+    object::{
         cube::Cube,
         medium::ConstantMedium,
         move_sphere::MoveSphere,
         rectangle::{Rectanglexy, Rectanglexz, Rectangleyz},
-        rotate::{Rotatey, self},
+        rotate::{self, Rotatey},
         translate::Translate,
         triangle::Triangle,
     },
@@ -22,7 +23,7 @@ use crate::{
         checker::Checker, image_texture::ImageTexture, obj_texture::ObjTexture,
         perlin::NoiseTexture, solid_color::SolidColor, Texture,
     },
-    Hit::{self, HittableList},
+    Hit::{self, Hittable, HittableList},
 };
 pub use crate::{
     basic::{
@@ -31,17 +32,19 @@ pub use crate::{
         VEC3::{Color, Point3, Vec3},
     },
     material::{dielectric::Dielectric, lambertian::Lambertian, matel::Metal, Material},
-    obj::sphere::Sphere,
+    object::sphere::Sphere,
 };
 
 // const ROOTFILE: &str = "obj_material/";
 
+random_scene_macro!();
+
 pub fn load_obj(
-    world: &mut HittableList, 
+    world: &mut HittableList,
     rootfile: &str,
-    rate: f64, 
-    objfile: &str, 
-    offset: Vec3, 
+    rate: f64,
+    objfile: &str,
+    offset: Vec3,
     rotate_angle: f64,
 ) {
     // rate: 物体放大倍数 objfile: obj格式文件名 imgfile: 贴图文件名
@@ -55,7 +58,7 @@ pub fn load_obj(
             ..Default::default()
         },
     );
-    
+
     assert!(obj.is_ok());
 
     let (models, materials) = obj.expect("Failed to load OBJ file");
@@ -73,7 +76,11 @@ pub fn load_obj(
 
         // println!("{}", mat_file_name);
         // Todo: 这里重复的png/jpg可能会被多次load, 可以用一个Hash来优化一下
-        let tex = Arc::new(image::open(mat_file_name).expect("load image failed").into_rgb8());
+        let tex = Arc::new(
+            image::open(mat_file_name)
+                .expect("load image failed")
+                .into_rgb8(),
+        );
 
         assert!(!mesh.texcoords.is_empty());
 
@@ -83,9 +90,8 @@ pub fn load_obj(
             let y = mesh.positions[3 * id + 1] as f64;
             let z = mesh.positions[3 * id + 2] as f64;
             vertices.push(Point3::new(x, y, z));
-           
         }
-        
+
         let mut object = HittableList::default();
         for i in 0..mesh.indices.len() / 3 {
             // [idx_x, idx_y, idx_z, ... ] 三个点为一个triangle
@@ -115,7 +121,7 @@ pub fn load_obj(
             object.add(Arc::new(tri));
             // println!("{}", i);
         }
-        
+
         //std::process::exit(0);
         // println!("{}", object.objects.len());
         let object = BvhNode::new_from_vec(object.objects, 0., 1.);
@@ -155,8 +161,8 @@ pub fn cornell_box() -> (HittableList, HittableList) {
     world.add(Arc::new(Rectanglexy::new(0., 555., 0., 555., 555., white)));
 
     let light1 = Arc::new(
-    //    Translate::new(
-            Rectangleyz::new(213., 343., 227., 332., 554., light.clone()),
+        //    Translate::new(
+        Rectangleyz::new(213., 343., 227., 332., 554., light.clone()),
         //     Point3::new(0., 100., 0.,)
         // ),
     );
@@ -165,28 +171,28 @@ pub fn cornell_box() -> (HittableList, HittableList) {
 
     let light2 = Arc::new(
         //    Translate::new(
-                Rectangleyz::new(213., 343., 227., 332., 1., light.clone()),
-            //     Point3::new(0., 100., 0.,)
-            // ),
-        );
+        Rectangleyz::new(213., 343., 227., 332., 1., light.clone()),
+        //     Point3::new(0., 100., 0.,)
+        // ),
+    );
     world.add(light2.clone());
     lights.add(light2);
 
     let light3 = Arc::new(
         //    Translate::new(
-                Rectanglexz::new(213., 343., 227., 332., 554., light.clone()),
-            //     Point3::new(0., 100., 0.,)
-            // ),
-        );
+        Rectanglexz::new(213., 343., 227., 332., 554., light.clone()),
+        //     Point3::new(0., 100., 0.,)
+        // ),
+    );
     world.add(light3.clone());
     lights.add(light3);
 
     let light4 = Arc::new(
         //    Translate::new(
-                Rectanglexz::new(213., 343., 227., 332., 1., light),
-            //     Point3::new(0., 100., 0.,)
-            // ),
-        );
+        Rectanglexz::new(213., 343., 227., 332., 1., light),
+        //     Point3::new(0., 100., 0.,)
+        // ),
+    );
     world.add(light4.clone());
     lights.add(light4);
     // let aluminum = Metal::new(Color::new(0.8, 0.85, 0.88), 0.);
@@ -222,9 +228,9 @@ pub fn cornell_box() -> (HittableList, HittableList) {
     // world.add(box2);
 
     load_obj(
-        &mut world, 
+        &mut world,
         "obj_material/Hutaoobj/",
-        20., 
+        20.,
         "Hutao.obj",
         Vec3::new(270., 70., 450.),
         0.,

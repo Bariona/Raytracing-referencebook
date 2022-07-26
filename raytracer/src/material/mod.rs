@@ -23,7 +23,8 @@ pub struct ScatterRecord {
     pub pdf_ptr: Option<CosPDF>,
 }
 
-pub struct ONB { // 一组正交基
+pub struct ONB {
+    // 一组正交基
     pub axis: [Vec3; 3],
 }
 

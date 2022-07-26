@@ -3,7 +3,7 @@ pub mod Hit;
 pub mod basic;
 pub mod bvh;
 pub mod material;
-pub mod obj;
+pub mod object;
 pub mod pdf;
 pub mod scene;
 pub mod texture;
@@ -35,7 +35,8 @@ fn ray_color(
     lights: &HittableList,
     depth: i32,
 ) -> Color {
-    if depth <= 0 { // 反射过多次, 可认为碰到了一个corner, 直接返回(0,0,0)无光
+    if depth <= 0 {
+        // 反射过多次, 可认为碰到了一个corner, 直接返回(0,0,0)无光
         return Color::new(0., 0., 0.);
     }
 
@@ -326,3 +327,4 @@ Questions:
     而且为什么一定要Sync + Send: 基本定义 (
 4. Camera: cam变量被调用为什么没有交出所有权: 因为Camera已经实现了copy, 没有实现copy的类型会直接转移所有权
 */
+

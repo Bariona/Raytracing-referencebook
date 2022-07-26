@@ -84,7 +84,7 @@ impl<M: Material> Hittable for Rectanglexy<M> {
         let point = Point3::new(
             random_range(self.x0, self.x1),
             random_range(self.y0, self.y1),
-            self.k
+            self.k,
         );
         point - *origin
     }

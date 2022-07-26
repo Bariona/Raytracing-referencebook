@@ -10,7 +10,7 @@ pub use crate::{
         VEC3::{Color, Point3, Vec3},
     },
     material::{dielectric::Dielectric, lambertian::Lambertian, matel::Metal, Material},
-    obj::sphere::Sphere,
+    object::sphere::Sphere,
 };
 
 pub struct HitRecord<'a> {

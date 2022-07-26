@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::{
     bvh::aabb::AABB,
-    obj::rectangle::{Rectanglexy, Rectanglexz, Rectangleyz},
+    object::rectangle::{Rectanglexy, Rectanglexz, Rectangleyz},
     Hit::{Hittable, HittableList, Material, Point3},
 };
 
