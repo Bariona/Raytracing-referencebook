@@ -18,12 +18,17 @@ impl BvhNode {
         // println!("length = {}", list.objects.len());
         Self::new_from_vec(list.objects, time0, time1)
     }
-    pub fn new_node_macro(left: Arc<dyn Hittable>, right: Arc<dyn Hittable>, time0: f64, time1: f64) -> Self {
+    pub fn new_node_macro(
+        left: Arc<dyn Hittable>,
+        right: Arc<dyn Hittable>,
+        time0: f64,
+        time1: f64,
+    ) -> Self {
         let box_left = left.bounding_box(time0, time1).unwrap();
         let box_right = right.bounding_box(time0, time1).unwrap();
 
         let box_aabb = surrounding_box(box_left, box_right);
-        
+
         Self {
             left,
             right,

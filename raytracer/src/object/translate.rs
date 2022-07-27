@@ -42,8 +42,7 @@ impl<H: Hittable> Hittable for Translate<H> {
         self.ptr.random(&(*origin - self.offset))
     }
     fn pdf_value(&self, o: &crate::Hit::Point3, v: &Vec3) -> f64 {
-        let res = self.ptr.pdf_value(&(*o - self.offset), v);
+        self.ptr.pdf_value(&(*o - self.offset), v)
         // println!("{:?} {:?} res = {}", *o - self.offset, v, res);
-        res
     }
 }

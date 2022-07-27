@@ -1,6 +1,6 @@
 #![allow(unused_imports)]
 use rand::{thread_rng, Rng};
-use raytracer_codegen::random_scene_macro;
+
 use std::{collections::HashMap, sync::Arc};
 
 use crate::{
@@ -36,8 +36,6 @@ pub use crate::{
 };
 
 // const ROOTFILE: &str = "obj_material/";
-
-random_scene_macro!();
 
 pub fn load_obj(
     world: &mut HittableList,
@@ -131,6 +129,9 @@ pub fn load_obj(
     }
 }
 
+use raytracer_codegen::random_scene_macro;
+random_scene_macro! {}
+
 pub fn cornell_box() -> (HittableList, HittableList) {
     let mut world = HittableList::default();
     let mut lights = HittableList::default();
@@ -195,6 +196,7 @@ pub fn cornell_box() -> (HittableList, HittableList) {
     );
     world.add(light4.clone());
     lights.add(light4);
+
     // let aluminum = Metal::new(Color::new(0.8, 0.85, 0.88), 0.);
     // let box1 = Cube::new(
     //     Point3::new(0., 0., 0.),
@@ -227,14 +229,16 @@ pub fn cornell_box() -> (HittableList, HittableList) {
     // let box2 = Arc::new(Translate::new(box2, Vec3::new(130., 0., 65.)));
     // world.add(box2);
 
-    load_obj(
-        &mut world,
-        "obj_material/Hutaoobj/",
-        20.,
-        "Hutao.obj",
-        Vec3::new(270., 70., 450.),
-        0.,
-    );
+    let tmp = add_bvh_static();
+    world.add(Arc::new(Translate::new(tmp, Vec3::new(270., 170., 450.))));
+    // load_obj(
+    //     &mut world,
+    //     "obj_material/",
+    //     100.,
+    //     "patrick.obj",
+    //     Vec3::new(270., 70., 450.),
+    //     180.,
+    // );
 
     (world, lights)
 }
