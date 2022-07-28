@@ -101,7 +101,7 @@ pub fn lerp(a: Color, b: Color, w: f64) -> Color {
     a + (b - a) * w
 }
 pub fn edge_detect() {
-    let data = image::open("output/book1.jpg").unwrap();
+    let data = image::open("output/book2.jpg").unwrap();
     let width = data.width();
     let height = data.height();
 
