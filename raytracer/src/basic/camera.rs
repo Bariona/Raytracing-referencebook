@@ -1,4 +1,4 @@
-#![allow(clippy::too_many_arguments)]
+#![allow(clippy::too_many_arguments, dead_code)]
 use super::{
     degree_to_radians, random_range,
     RAY::Ray,

@@ -228,18 +228,18 @@ pub fn cornell_box() -> (HittableList, HittableList) {
     // let box2 = Arc::new(Rotatey::new(box2, -18.));
     // let box2 = Arc::new(Translate::new(box2, Vec3::new(130., 0., 65.)));
     // world.add(box2);
-    
-    let tmp = add_bvh_static();
 
-    world.add(Arc::new(Translate::new(tmp, Vec3::new(270., 170., 450.))));
-    // load_obj(
-    //     &mut world,
-    //     "obj_material/",
-    //     100.,
-    //     "patrick.obj",
-    //     Vec3::new(270., 70., 450.),
-    //     180.,
-    // );
+    // let tmp = add_bvh_static();
+    // world.add(Arc::new(Translate::new(tmp, Vec3::new(270., 170., 450.))));
+
+    load_obj(
+        &mut world,
+        "obj_material/",
+        200.,
+        "patrick.obj",
+        Vec3::new(270., 70., 450.),
+        180.,
+    );
 
     (world, lights)
 }

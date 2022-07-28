@@ -64,7 +64,7 @@ impl Vec3 {
         self.len_square().sqrt()
     }
     pub fn unit_vector(&self) -> Vec3 {
-        *self / (&self).len()
+        *self / self.len()
     }
 
     // ---- random ----

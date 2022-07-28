@@ -9,7 +9,7 @@ pub mod scene;
 pub mod texture;
 
 use console::style;
-use image::{ImageBuffer, RgbImage};
+use image::{GenericImageView, ImageBuffer, Pixel, RgbImage};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use pdf::{hittablepdf::HittablePDF, mixturepdf::MixturePDF, PDF};
 use std::{
@@ -94,7 +94,86 @@ fn write_color(pixel_color: Color, samples_per_pixel: usize) -> [u8; 3] {
     ]
 }
 
+pub fn luminance(color: &Color) -> f64 {
+    0.2125 * color.x + 0.7154 * color.y + 0.0721 * color.z
+}
+pub fn lerp(a: Color, b: Color, w: f64) -> Color {
+    a + (b - a) * w
+}
+pub fn edge_detect() {
+    let data = image::open("output/book1.jpg").unwrap();
+    let width = data.width();
+    let height = data.height();
+
+    println!("{}", style("Edge Detect:").yellow());
+    let progress_bar = ProgressBar::new((height * width) as u64);
+    progress_bar.set_style(ProgressStyle::default_bar()
+    .template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] [{pos}/{len}] ({eta})")
+    .progress_chars("#>-"));
+
+    let mut img: RgbImage = ImageBuffer::new(width, height);
+    let color_scale = 1. / 255.;
+
+    let edge_color = Color::new(0., 0., 0.);
+    let background_color = Color::new(1., 1., 1.);
+
+    let capture = |mut i: u32, mut j: u32| {
+        i = i.min(width - 1);
+        i = i.max(0);
+        j = j.min(height - 1);
+        j = j.max(0);
+        let pixel = data.get_pixel(i, j).to_rgb();
+        Color::new(
+            color_scale * pixel[0] as f64,
+            color_scale * pixel[1] as f64,
+            color_scale * pixel[2] as f64,
+        )
+    };
+
+    let Gx = vec![-1, -2, -1, 0, 0, 0, 1, 2, 1];
+    let Gy = vec![-1, 0, 1, -2, 0, 2, -1, 0, 1];
+
+    for a in 0..width {
+        for b in 0..height {
+            let pixel = img.get_pixel_mut(a, b);
+
+            let mut edgex = 0.;
+            let mut edgey = 0.;
+            let mut cnt = 0;
+            for i in -1..=1 {
+                for j in -1..=1 {
+                    let tmp = luminance(&capture(a + i as u32, b + j as u32));
+                    edgex += Gx[cnt] as f64 * tmp;
+                    edgey += Gy[cnt] as f64 * tmp;
+                    cnt += 1;
+                }
+            }
+            let edge = 1. - edgex.abs() - edgey.abs();
+            let withEdgeColor = lerp(edge_color, capture(a, b), edge);
+            let onlyEdgeColor = lerp(edge_color, background_color, edge);
+            let getn = lerp(withEdgeColor, onlyEdgeColor, edge);
+
+            let res = [
+                (256. * clamp(getn.x, 0., 0.999)) as u8,
+                (256. * clamp(getn.y, 0., 0.999)) as u8,
+                (256. * clamp(getn.z, 0., 0.999)) as u8,
+            ];
+
+            *pixel = image::Rgb(res);
+            progress_bar.inc(1);
+        }
+    }
+    let output_image = image::DynamicImage::ImageRgb8(img);
+    let mut output_file = File::create("output/output.jpg").unwrap();
+    match output_image.write_to(&mut output_file, image::ImageOutputFormat::Jpeg(100)) {
+        Ok(_) => {}
+        Err(_) => println!("{}", style("Outputting image fails.").red()),
+    }
+    std::process::exit(0);
+}
 fn main() {
+    edge_detect();
+
     const THREAD_NUMBER: usize = 8;
 
     // Image

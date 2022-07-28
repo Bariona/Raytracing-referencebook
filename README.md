@@ -1,5 +1,6 @@
 # RayTracing-referencebook
 
+PPCA project by ACM Class2021
 ## Outline:
 
 - Reference Book:[《RayTracing In One Weekend》](https://raytracing.github.io/)
@@ -25,6 +26,10 @@
 
 - [x] track 8: support for OBJ 
 
+- [ ] 《Unity Shader入门精要》学习ing...
+
+    已完成: 利用sobel算子实现图片的边缘检测
+
 - [x] 三本书已完成
 
 
@@ -48,7 +53,7 @@
 ![](output/baseball.jpg)
 
 1. Reference Book Part:
-- Book3 done
+
 
 学习重点: Monte Carlo Integration
 
@@ -79,13 +84,15 @@ $s(direction)$: 为材质表面在$dir$方向的概率密度函数
 
 $color(direction)$: 为该方向射来的光的RGB参数
 
+- Book3 final scene
+ 
 ![](output/book3.jpg)
 
-- Book2 done
+- Book2 final scene
 
 ![](output/book2.jpg)
 
-- Book1 done
+- Book1 final scene
 
 这里的random_scene() 出现了两个小球相交的情况
 

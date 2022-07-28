@@ -15,10 +15,10 @@ use std::{
     thread,
 };
 
-use rand::Rng;
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use rand::Rng;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Camera {
@@ -107,7 +107,6 @@ pub fn random_range(min: f64, max: f64) -> f64 {
     // [min, max)
     min + (max - min) * random_double()
 }
-
 
 #[derive(Default, Copy, Clone, Debug)]
 pub struct Ray {
@@ -364,8 +363,6 @@ impl DivAssign<f64> for Vec3 {
     }
 }
 
-
-
 #[derive(Default, Copy, Clone, Debug)]
 pub struct AABB {
     pub mini: Point3,
@@ -416,7 +413,6 @@ pub fn surrounding_box(box0: AABB, box1: AABB) -> AABB {
         maxi: big,
     }
 }
-
 
 pub struct BvhNode {
     left: Arc<dyn Hittable>, // 指向 Hittable List
@@ -555,7 +551,6 @@ impl Hittable for BvhNode {
     }
 }
 
-
 pub struct Dielectric {
     pub ir: f64, // Index of Refraction
 }
@@ -606,7 +601,6 @@ impl Material for Dielectric {
     }
 }
 
-
 #[derive(Clone)]
 pub struct DiffuseLight<T: Texture> {
     emit: T,
@@ -656,7 +650,6 @@ impl<T: Texture> Material for Isotropic<T> {
     }
 }
 
-
 #[derive(Clone)]
 pub struct Lambertian<T: Texture> {
     pub albedo: T, // albedo 为实现了Texture的一个泛型
@@ -690,7 +683,6 @@ impl<T: Texture> Material for Lambertian<T> {
     }
 }
 
-
 #[derive(Clone, Copy)]
 pub struct Metal {
     pub albedo: Color, // 材质本身的反射率
@@ -722,8 +714,6 @@ impl Material for Metal {
         })
     }
 }
-
-
 
 pub struct ScatterRecord {
     // 1 - attenuation := 光线的被吸收量, attenuation在某种意义上和材料的albedo(反射率)等价
@@ -781,7 +771,6 @@ pub trait Material: Send + Sync {
         Some(Color::new(0., 0., 0.))
     }
 }
-
 
 pub struct Cube {
     box_min: Point3,
@@ -950,7 +939,6 @@ impl<H: Hittable, M: Material> Hittable for ConstantMedium<H, M> {
         ))
     }
 }
-
 
 pub struct MoveSphere<M: Material> {
     pub center0: Point3,
@@ -1286,7 +1274,6 @@ impl<M: Material> Hittable for Rectangleyz<M> {
     }
 }
 
-
 pub struct Rotatey<T: Hittable> {
     ptr: T,
     sin_theta: f64,
@@ -1375,8 +1362,6 @@ impl<T: Hittable> Hittable for Rotatey<T> {
         Some(self.bbox)
     }
 }
-
-
 
 pub struct Sphere<M: Material> {
     pub center: Point3,
@@ -1472,7 +1457,6 @@ impl<M: Material> Hittable for Sphere<M> {
     }
 }
 
-
 // 物体空间平移 offset
 #[derive(Debug)]
 pub struct Translate<H: Hittable> {
@@ -1516,7 +1500,6 @@ impl<H: Hittable> Hittable for Translate<H> {
         // println!("{:?} {:?} res = {}", *o - self.offset, v, res);
     }
 }
-
 
 const EPS_: f64 = 1e-10;
 
@@ -1600,7 +1583,6 @@ impl<M: Material> Hittable for Triangle<M> {
     }
 }
 
-
 pub struct CosPDF {
     uvw: ONB,
 }
@@ -1624,7 +1606,6 @@ impl PDF for CosPDF {
     }
 }
 
-
 #[derive(Clone)]
 pub struct HittablePDF<'a, H: Hittable> {
     origin: Point3,
@@ -1645,7 +1626,6 @@ impl<'a, H: Hittable> PDF for HittablePDF<'a, H> {
         self.ptr.random(&self.origin)
     }
 }
-
 
 pub struct MixturePDF<T1: PDF, T2: PDF> {
     p0: T1,
@@ -1671,7 +1651,6 @@ impl<T1: PDF, T2: PDF> PDF for MixturePDF<T1, T2> {
         }
     }
 }
-
 
 pub trait PDF {
     fn generate(&self) -> Vec3;
@@ -1703,7 +1682,6 @@ pub fn random_to_sphere(radius: f64, distance_squared: f64) -> Vec3 {
     Vec3::new(x, y, z)
 }
 
-
 pub struct Checker<T: Texture> {
     pub odd: T,
     pub even: T,
@@ -1728,7 +1706,6 @@ impl<T: Texture> Texture for Checker<T> {
         }
     }
 }
-
 
 pub struct ImageTexture {
     pub width: u32,
@@ -1775,11 +1752,9 @@ impl Texture for ImageTexture {
     }
 }
 
-
 pub trait Texture: Send + Sync {
     fn value(&self, u: f64, v: f64, p: &Point3) -> Option<Color>;
 }
-
 
 pub struct ObjTexture {
     pub u1: f64,
@@ -1839,8 +1814,6 @@ impl Texture for ObjTexture {
         ))
     }
 }
-
-
 
 const POINT_COUNT: usize = 256;
 
@@ -1974,7 +1947,6 @@ impl Texture for NoiseTexture {
     }
 }
 
-
 #[derive(Clone, Copy)]
 pub struct SolidColor {
     pub color_val: Color,
@@ -1993,7 +1965,6 @@ impl Texture for SolidColor {
         Some(self.color_val)
     }
 }
-
 
 pub struct HitRecord<'a> {
     pub p: Point3,        // 碰撞点
@@ -2116,7 +2087,6 @@ impl Hittable for HittableList {
         self.objects[thread_rng().gen_range(0..self.objects.len())].random(o)
     }
 }
-
 
 pub fn load_obj(
     world: &mut HittableList,
@@ -2306,7 +2276,7 @@ pub fn cornell_box() -> (HittableList, HittableList) {
     // let box2 = Arc::new(Rotatey::new(box2, -18.));
     // let box2 = Arc::new(Translate::new(box2, Vec3::new(130., 0., 65.)));
     // world.add(box2);
-    
+
     // let tmp = add_bvh_static();
 
     // world.add(Arc::new(Translate::new(tmp, Vec3::new(270., 170., 450.))));
@@ -2321,7 +2291,6 @@ pub fn cornell_box() -> (HittableList, HittableList) {
 
     (world, lights)
 }
-
 
 fn ray_color(
     r: Ray,
@@ -2408,7 +2377,7 @@ fn ray_benchmark(c: &mut Criterion) {
     let background = Color::new(0., 0., 0.);
     let lf = Point3::new(278., 278., -800.);
     let la = Point3::new(278., 278., 0.);
-    let vfov = 30.;
+    let vfov = 40.;
 
     let (world, lights) = cornell_box();
 
@@ -2477,18 +2446,19 @@ fn ray_benchmark(c: &mut Criterion) {
     // let u = (i as f64 + random_double()) / (IMAGE_WIDTH as f64 - 1.);
     // let v = (j as f64 + random_double()) / (IMAGE_HEIGHT as f64 - 1.);
     // let r = cam.get_ray(u, v);
-    // // ---- benchmark test ---- 
+    // // ---- benchmark test ----
     // c.bench_function("Ray test", |b| { // b: Bencher 类型
     //     b.iter(|| ray_color(
-    //         black_box(r), 
-    //         black_box(background), 
+    //         black_box(r),
+    //         black_box(background),
     //         black_box(&world),
     //         black_box(&lights),
     //         black_box(MAX_DEPTH),
     //     ))
     // });
 
-    c.bench_function("Ray test", |b| { // b: Bencher 类型
+    c.bench_function("Ray test", |b| {
+        // b: Bencher 类型
         b.iter(|| {
             for a in 0..=5 {
                 for b in 0..=5 {
@@ -2498,21 +2468,18 @@ fn ray_benchmark(c: &mut Criterion) {
                     let v = (j as f64 + random_double()) / (IMAGE_HEIGHT as f64 - 1.);
                     let r = cam.get_ray(u, v);
                     ray_color(
-                        black_box(r), 
-                        black_box(background), 
+                        black_box(r),
+                        black_box(background),
                         black_box(&world),
                         black_box(&lights),
-                        black_box(MAX_DEPTH)
+                        black_box(MAX_DEPTH),
                     );
                 }
-            }  
+            }
         })
     });
-    
-
 
     // Render
-
 
     // println!(
     //     "         Image size:                {}",
@@ -2573,7 +2540,6 @@ fn ray_benchmark(c: &mut Criterion) {
     //                         let v = (j as f64 + random_double()) / (IMAGE_HEIGHT as f64 - 1.);
     //                         let r = cam.get_ray(u, v);
 
-    
     //                         pixel_color +=
     //                             ray_color(r, background, &clone_world, &clone_lights, MAX_DEPTH);
     //                     }
