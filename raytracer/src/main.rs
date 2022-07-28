@@ -95,13 +95,13 @@ fn write_color(pixel_color: Color, samples_per_pixel: usize) -> [u8; 3] {
 }
 
 fn main() {
-    const THREAD_NUMBER: usize = 32;
+    const THREAD_NUMBER: usize = 8;
 
     // Image
     const RATIO: f64 = 1.;
     const IMAGE_WIDTH: usize = 600;
     const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / RATIO) as usize;
-    const SAMPLES_PER_PIXEL: usize = 1000;
+    const SAMPLES_PER_PIXEL: usize = 10;
     const MAX_DEPTH: i32 = 50;
 
     let quality = 100;

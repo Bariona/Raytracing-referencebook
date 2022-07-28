@@ -1,17 +1,23 @@
 [package]
-name = "Raytracer"
+name = "raytracer"
 version = "0.1.0"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rand = "0.8.5"
+rand = "0.8.3"
 ndarray = "0.13.0"
 tobj = "3.2.2"
-
 image = "0.23"
 console = "0.9.1"    # console text format
-indicatif = "0.16.2" # progress bar
-
+indicatif = "0.15" # progress bar
 raytracer_codegen = { path = "../raytracer_codegen" }
+
+imageproc = "0.21"
+rusttype = "0.9"
+
+threadpool = "1.8"
+yaml-rust = "0.4"
+serde_json = "1.0"
+criterion = "0.3"

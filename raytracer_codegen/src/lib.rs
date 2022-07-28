@@ -9,6 +9,7 @@ mod vec3;
 use proc_macro2::TokenStream;
 use quote::quote;
 use rand::Rng;
+use syn::DeriveInput;
 use vec3::{random_double, random_range, Vec3};
 
 #[derive(Clone)]
@@ -23,6 +24,12 @@ struct Content {
 
 #[proc_macro]
 pub fn random_scene_macro(_input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    // let st = syn::parse_macro_input!(input as DeriveInput);
+
+    // let name = st.ident;
+    // println!("{}", name);
+    // std::process::exit(0);
+
     let mut objects = vec![];
     for a in -11..11 {
         for b in -11..11 {
@@ -133,6 +140,9 @@ pub fn random_scene_macro(_input: proc_macro::TokenStream) -> proc_macro::TokenS
         fn add_bvh_static() -> BvhNode {
             // Sphere::new(Vec3::new(0., 0., 0.), 50., Lambertian::<SolidColor>::new(Vec3::new(0.8, 0.3, 0.3)))
             #allnode
+        }
+        fn funny() {
+            println!("####");
         }
     });
     return result.into();
