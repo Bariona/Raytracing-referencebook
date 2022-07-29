@@ -11,7 +11,11 @@ PPCA project by ACM Class2021
 ## Current Progress:
 
 1. **bonus part**:
-- [x] track 1: Reduce Contention
+- [x] track 1: Reduce Contention: 
+      
+      减少dyn的出现(动态分配)
+      Arc的使用(原子引用计数器) clone/drop等操作比较费时
+      solution: 使用generics来实现静态分发
 
 - [x] track 2: Static Dispatch (增加泛型)
 
